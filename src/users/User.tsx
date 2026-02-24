@@ -58,7 +58,7 @@ export const UserShow = () => (
       >
         <DataTable>
           <DataTable.Col source="nas_identifier" />
-          <DataTable.Col source="nas_port_id" />
+          <DataTable.Col source="nas_port_id" label="Port ID" />
           <DataTable.Col source="created_at" label="First seen">
             <DateField source="created_at" showTime={true} />
           </DataTable.Col>
@@ -73,15 +73,15 @@ export const UserShow = () => (
         label="Sessions"
         reference="logs/accounting"
         target="username"
-        sort={{ field: "acctstarttime", order: "DESC" }}
+        sort={{ field: "acct_start_time", order: "DESC" }}
         empty="No accounting logs found"
       >
         <DataTable>
-          <DataTable.Col source="nasidentifier" />
-          <DataTable.Col source="nasportid" />
+          <DataTable.Col source="nas_identifier" />
+          <DataTable.Col source="nas_port_id" label="Port ID" />
 
-          <DataTable.Col source="acctstarttime">
-            <DateField source="acctstarttime" showTime={true} />
+          <DataTable.Col source="acct_start_time">
+            <DateField source="acct_start_time" showTime={true} />
           </DataTable.Col>
           <DataTable.Col source="acctstoptime">
             <DateField source="acctstoptime" showTime={true} />
@@ -94,14 +94,14 @@ export const UserShow = () => (
         label="Post Authentication logs"
         reference="logs/post_auth"
         target="username"
-        sort={{ field: "authdate", order: "DESC" }}
+        sort={{ field: "auth_date", order: "DESC" }}
         empty="No post authentication logs found"
       >
         <DataTable>
-          <DataTable.Col source="nasidentifier" />
-          <DataTable.Col source="nasportid" />
-          <DataTable.Col source="authdate">
-            <DateField source="authdate" showTime={true} />
+          <DataTable.Col source="nas_identifier" />
+          <DataTable.Col source="nas_port_id" label="Port ID" />
+          <DataTable.Col source="auth_date">
+            <DateField source="auth_date" showTime={true} />
           </DataTable.Col>
           <DataTable.Col source="reply_message" />
         </DataTable>
