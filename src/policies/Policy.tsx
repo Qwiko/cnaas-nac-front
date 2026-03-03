@@ -1,11 +1,9 @@
-import { Button, Divider, Tooltip, Typography } from "@mui/material";
-import { Box, Grid } from "@mui/system";
+import { Button, Tooltip, Typography } from "@mui/material";
+import { Grid } from "@mui/system";
 import {
   BooleanField,
   Create,
   DataTable,
-  DateField,
-  DateInput,
   List,
   NumberField,
   Show,
@@ -17,22 +15,20 @@ import {
   SimpleForm,
   TextInput,
   ArrayField,
-  ChipField,
-  SingleFieldList,
   ArrayInput,
   SimpleFormIterator,
   SelectInput,
   SelectField,
   FormDataConsumer,
-  ReferenceArrayInput,
-  Labeled,
   ReferenceInput,
-  isRequired,
   ReferenceField,
   useListContext,
   useRecordContext,
-  useSimpleFormIterator,
-  IconButtonWithTooltip,
+  DeleteButton,
+  EditButton,
+  CloneButton,
+  ButtonProps,
+  TopToolbar,
 } from "react-admin";
 import AddIcon from "@mui/icons-material/Add";
 import { useFormContext } from "react-hook-form";
@@ -51,6 +47,14 @@ export const PolicyList = () => (
       </DataTable.Col>
     </DataTable>
   </List>
+);
+
+const PolicyShowActions = () => (
+  <TopToolbar>
+    <CloneButton />
+    <EditButton />
+    <DeleteButton mutationMode="pessimistic" />
+  </TopToolbar>
 );
 
 const PolicyShowConditionValue = () => {
@@ -97,7 +101,7 @@ const AddVlanRepliesButton = (props: ButtonProps) => {
 };
 
 export const PolicyShow = () => (
-  <Show>
+  <Show actions={<PolicyShowActions />}>
     <SimpleShowLayout>
       <TextField source="name" />
       <TextField source="description" />
@@ -259,7 +263,6 @@ const PolicyCreateEdit = () => (
             scopedFormData, // The data for this item of the ArrayInputBase
             ...rest
           }) => {
-            console.log(scopedFormData);
             if (scopedFormData.attribute == "group_id") {
               return (
                 <>
@@ -347,7 +350,7 @@ export const PolicyEdit = () => (
 );
 
 export const PolicyCreate = () => (
-  <Create>
+  <Create redirect="show">
     <PolicyCreateEdit />
   </Create>
 );
