@@ -19,16 +19,32 @@ import {
   EditButton,
   DeleteButton,
   TopToolbar,
+  SelectArrayInput,
 } from "react-admin";
 
 const EndpointFilters = [
+  // eslint-disable-next-line react/jsx-key
   <TextInput label="Search" source="q" alwaysOn />,
+  // eslint-disable-next-line react/jsx-key
   <ReferenceArrayInput
     reference="endpoint_group"
     label="Group"
     source="group_id__in"
   />,
+  // eslint-disable-next-line react/jsx-key
+  <SelectArrayInput
+    source="state__in"
+    label="State"
+    choices={[
+      { id: "discovered", name: "Discovered" },
+      { id: "pending", name: "Pending" },
+      { id: "rejected", name: "Rejected" },
+      { id: "authorized", name: "Authorized" },
+    ]}
+  />,
+  // eslint-disable-next-line react/jsx-key
   <TextInput label="NAS Identifier" source="nas_identifier__like" />,
+  // eslint-disable-next-line react/jsx-key
   <TextInput label="NAS Port" source="nas_port_id__like" />,
 ];
 
