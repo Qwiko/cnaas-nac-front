@@ -1,11 +1,9 @@
 import LanIcon from "@mui/icons-material/Lan";
-import { UserList, UserShow, UserEdit, UserCreate } from "./User";
+import { VlanList, VlanShow } from "./Vlan";
 
 export default {
-  list: UserList,
-  create: UserCreate,
-  edit: UserEdit,
-  show: UserShow,
+  list: VlanList,
+  show: VlanShow,
   icon: LanIcon,
   // recordRepresentation: (record: Network) => `"${record.reference}"`,
 };

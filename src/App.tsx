@@ -5,11 +5,12 @@ import authProvider from "./authProvider";
 import dataProvider from "./dataProvider";
 
 import type { ThemeOptions } from "@mui/material";
-import user from "./users";
-import assignment_rule from "./assignment_rules";
+import endpoints from "./endpoints";
+import endpoint_groups from "./endpoint_groups";
+import policies from "./policies";
+import vlans from "./vlans";
 
 import { NACLogin } from "./Login";
-
 
 const redirectLoginUrl = import.meta.env.VITE_REDIRECT_LOGIN_URL;
 
@@ -51,7 +52,6 @@ const darkTheme: ThemeOptions = {
   },
 };
 
-
 export const App = () => (
   <Admin
     theme={theme}
@@ -61,7 +61,9 @@ export const App = () => (
     loginPage={NACLogin(redirectLoginUrl)}
     layout={Layout}
   >
-    <Resource name="assignment_rule" {...assignment_rule} />
-    <Resource name="user" {...user} />
+    <Resource name="endpoint" {...endpoints} />
+    <Resource name="endpoint_group" {...endpoint_groups} />
+    <Resource name="policy" {...policies} />
+    <Resource name="vlan" {...vlans} />
   </Admin>
 );

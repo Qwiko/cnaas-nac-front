@@ -13,17 +13,19 @@ const mapId = (
   data: object[] | object,
   resource: string,
 ): object[] | object => {
-  const mapResources = ["user"];
-
-  if (!mapResources.includes(resource)) return data;
+  let mapField: string = "";
+  if (resource === "vlan") {
+    mapField = "vlan";
+  }
+  if (!mapField) return data;
 
   if (Array.isArray(data)) {
     return data.map((d) => ({
       ...d,
-      id: d.username,
+      id: d[mapField],
     }));
   }
-  return { ...data, id: data.username };
+  return { ...data, id: data[mapField] };
 };
 
 const dataProvider: DataProvider = {
@@ -93,7 +95,7 @@ const dataProvider: DataProvider = {
 
     flattenParamFilters = Object.fromEntries(
       Object.entries(flattenParamFilters).map(([key, value]) => {
-        if (typeof (value == "list")) {
+        if (typeof value == "list") {
           return [key, value.join(",")];
         }
 
@@ -102,8 +104,9 @@ const dataProvider: DataProvider = {
     );
 
     const query = {
-      ...flattenParamFilters,
       [params.target]: params.id,
+      ...flattenParamFilters,
+
       order_by: (order == "ASC" ? "+" : "-") + field,
       page: page ? page : undefined,
       size: perPage ? perPage : undefined,
@@ -124,7 +127,7 @@ const dataProvider: DataProvider = {
       body: JSON.stringify(params.data),
       headers: createHeader(),
     });
-    return { data: json };
+    return { data: mapId(json, resource) };
   },
 
   // json-server doesn't handle filters on UPDATE route, so we fallback to calling UPDATE n times instead
@@ -147,7 +150,7 @@ const dataProvider: DataProvider = {
       body: JSON.stringify(params.data),
       headers: createHeader(),
     });
-    return { data: { ...params.data, ...json } as any };
+    return { data: { ...params.data, ...mapId(json, resource) } as any };
   },
 
   delete: async (resource, params) => {
