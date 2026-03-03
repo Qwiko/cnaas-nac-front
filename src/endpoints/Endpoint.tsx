@@ -16,6 +16,9 @@ import {
   ReferenceField,
   ReferenceArrayInput,
   SelectField,
+  EditButton,
+  DeleteButton,
+  TopToolbar,
 } from "react-admin";
 
 const EndpointFilters = [
@@ -160,8 +163,15 @@ const EndpointShowRelations = () => {
   );
 };
 
+const EndpointShowActions = () => (
+  <TopToolbar>
+    <EditButton />
+    <DeleteButton mutationMode="pessimistic" />
+  </TopToolbar>
+);
+
 export const EndpointShow = () => (
-  <Show>
+  <Show actions={<EndpointShowActions />}>
     <SimpleShowLayout>
       <TextField source="username" />
       <TextField source="calling_station_id" />

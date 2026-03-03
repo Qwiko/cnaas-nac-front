@@ -1,7 +1,9 @@
 import {
   Create,
   DataTable,
+  DeleteButton,
   Edit,
+  EditButton,
   List,
   NumberField,
   ReferenceManyField,
@@ -10,6 +12,7 @@ import {
   SimpleShowLayout,
   TextField,
   TextInput,
+  TopToolbar,
 } from "react-admin";
 
 const EndpointGroupFilters = [<TextInput label="Search" source="q" alwaysOn />];
@@ -22,8 +25,15 @@ export const EndpointGroupList = () => (
   </List>
 );
 
+const EndpointGroupShowActions = () => (
+  <TopToolbar>
+    <EditButton />
+    <DeleteButton mutationMode="pessimistic" />
+  </TopToolbar>
+);
+
 export const EndpointGroupShow = () => (
-  <Show>
+  <Show actions={<EndpointGroupShowActions />}>
     <SimpleShowLayout>
       <TextField source="name" />
       <ReferenceManyField
