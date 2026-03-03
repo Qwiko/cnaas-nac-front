@@ -25,6 +25,8 @@ const EndpointFilters = [
     label="Group"
     source="group_id__in"
   />,
+  <TextInput label="NAS Identifier" source="nas_identifier__like" />,
+  <TextInput label="NAS Port" source="nas_port_id__like" />,
 ];
 
 export const EndpointList = () => (
@@ -44,6 +46,7 @@ export const EndpointList = () => (
           source="state"
           choices={[
             { id: "discovered", name: "Discovered" },
+            { id: "pending", name: "Pending" },
             { id: "rejected", name: "Rejected" },
             { id: "authorized", name: "Authorized" },
           ]}
@@ -51,6 +54,8 @@ export const EndpointList = () => (
       </DataTable.Col>
 
       <DataTable.Col source="oui" />
+      <DataTable.Col source="nas_identifier" label="Latest NAS Identifier" />
+      <DataTable.Col source="nas_port_id" label="Latest NAS Port" />
     </DataTable>
   </List>
 );
@@ -160,16 +165,28 @@ export const EndpointShow = () => (
     <SimpleShowLayout>
       <TextField source="username" />
       <TextField source="calling_station_id" />
+      <TextField source="description" />
       <SelectField
         source="state"
         choices={[
           { id: "discovered", name: "Discovered" },
+          { id: "pending", name: "Pending" },
           { id: "rejected", name: "Rejected" },
           { id: "authorized", name: "Authorized" },
         ]}
       />
       <ReferenceField reference="endpoint_group" source="group_id" />
       <TextField source="oui" />
+      <TextField
+        source="nas_identifier"
+        label="Latest NAS Identifier"
+        emptyText="None"
+      />
+      <TextField
+        source="nas_port_id"
+        label="Latest NAS Port"
+        emptyText="None"
+      />
       <DateField source="created_at" showTime={true} />
       <DateField source="updated_at" showTime={true} />
     </SimpleShowLayout>
@@ -180,6 +197,7 @@ export const EndpointShow = () => (
 export const EndpointEdit = () => (
   <Edit redirect="show" mutationMode="pessimistic">
     <SimpleForm>
+      <TextInput source="description" />
       <ReferenceInput reference="endpoint_group" source="group_id" />
     </SimpleForm>
   </Edit>
