@@ -116,6 +116,7 @@ const dataProvider: DataProvider = {
 
     const { json, headers } = await httpClient(url, {
       signal: params?.signal,
+      headers: createHeader(),
     });
 
     return { data: mapId(json, resource), total: headers.get("x-total-count") };
