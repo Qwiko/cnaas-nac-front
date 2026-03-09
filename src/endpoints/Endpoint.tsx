@@ -1,4 +1,3 @@
-import { Link, Tooltip } from "@mui/material";
 import {
   Create,
   DataTable,
@@ -20,7 +19,18 @@ import {
   DeleteButton,
   TopToolbar,
   SelectArrayInput,
+  FunctionField,
+  SelectColumnsButton,
+  FilterButton,
+  CreateButton,
+  ExportButton,
+  DatagridConfigurable,
+  useResourceContext,
+  useGetRecordId,
+  useGetOne,
+  Loading,
 } from "react-admin";
+import { ListBulkActions } from "../shared/Shared";
 
 const EndpointFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -48,48 +58,140 @@ const EndpointFilters = [
   <TextInput label="NAS Port" source="nas_port_id__like" />,
 ];
 
-export const EndpointList = () => (
-  <List filters={EndpointFilters}>
-    <DataTable>
-      <DataTable.Col source="username" />
-      <DataTable.Col source="calling_station_id" />
-      <DataTable.Col source="group_id">
-        <ReferenceField
-          reference="endpoint_group"
-          source="group_id"
-          label="Group"
-        />
-      </DataTable.Col>
-      <DataTable.Col source="state">
-        <SelectField
-          source="state"
-          choices={[
-            { id: "discovered", name: "Discovered" },
-            { id: "pending", name: "Pending" },
-            { id: "rejected", name: "Rejected" },
-            { id: "authorized", name: "Authorized" },
-          ]}
-        />
-      </DataTable.Col>
+const EndpointListActions = () => (
+  <TopToolbar>
+    <SelectColumnsButton />
+    <FilterButton />
+    <CreateButton />
+    <ExportButton />
+  </TopToolbar>
+);
 
-      <DataTable.Col source="oui" />
-      <DataTable.Col source="nas_identifier" label="Latest NAS Identifier" />
-      <DataTable.Col source="nas_port_id" label="Latest NAS Port" />
-    </DataTable>
+export const EndpointList = () => (
+  <List filters={EndpointFilters} actions={<EndpointListActions />}>
+    <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
+      <TextField source="username" />
+      <TextField source="calling_station_id" />
+      <ReferenceField
+        reference="endpoint_group"
+        source="group_id"
+        label="Group"
+      />
+      <SelectField
+        source="state"
+        choices={[
+          { id: "discovered", name: "Discovered" },
+          { id: "pending", name: "Pending" },
+          { id: "rejected", name: "Rejected" },
+          { id: "authorized", name: "Authorized" },
+        ]}
+      />
+      <TextField source="oui" />
+      <TextField source="nas_identifier" label="Latest NAS Identifier" />
+      <TextField source="nas_port_id" label="Latest NAS Port" />
+      <DateField source="created_at" showTime={true} />
+      <DateField source="updated_at" showTime={true} />
+    </DatagridConfigurable>
   </List>
 );
 
-const EndPointShowAuthLogsPolicyLink = () => {
-  const record = useRecordContext();
+const formatSeconds = (totalSeconds?: number): string | undefined => {
+  if (!totalSeconds) return;
 
-  if (!record) return null;
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [
+    days > 0 && `${days}d`,
+    hours > 0 && `${hours}h`,
+    minutes > 0 && `${minutes}m`,
+    seconds > 0 && `${seconds}s`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+};
+
+const formatOctets = (bytes?: number, decimals = 2): string | undefined => {
+  if (!bytes || bytes === 0) return;
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
+
+  // Calculate which index of 'sizes' to use
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+};
+
+const AccountingExpand = () => {
+  const recordId = useGetRecordId();
+
+  const resource = useResourceContext();
+
+  const { data, isPending } = useGetOne(resource, { id: recordId });
+
+  if (isPending) {
+    return <Loading loadingSecondary="" />;
+  }
+  const record = data;
 
   return (
-    <Tooltip title="Search for policy">
-      <Link href={`#/policy?filter={"q"%3A"${record.matched_policy}"}`}>
-        <TextField source="matched_policy" />
-      </Link>
-    </Tooltip>
+    <>
+      <SimpleShowLayout record={record} direction={"row"}>
+        <TextField source="nas_identifier" />
+        <TextField source="nas_port_id" label="Port ID" />
+      </SimpleShowLayout>
+      <SimpleShowLayout record={record} direction={"row"}>
+        <DateField
+          source="acct_start_time"
+          showTime={true}
+          label="Start time"
+        />
+        <DateField
+          source="acct_update_time"
+          showTime={true}
+          label="Update time"
+          emptyText="N/A"
+        />
+
+        <DateField
+          source="acct_stop_time"
+          showTime={true}
+          label="Stop time"
+          emptyText="N/A"
+        />
+      </SimpleShowLayout>
+      <SimpleShowLayout record={record} direction={"row"}>
+        <FunctionField
+          // source="acct_session_time"
+          label="Session time"
+          emptyText="N/A"
+          render={(record) => formatSeconds(record?.acct_session_time)}
+        />
+        {/* <NumberField source="acct_input_octets" /> */}
+        <FunctionField
+          // source="acct_session_time"
+          label="Input data"
+          render={(record) => formatOctets(record?.acct_input_octets)}
+        />
+        {/* <NumberField source="acct_output_octets" /> */}
+        <FunctionField
+          // source="acct_session_time"
+          label="Output data"
+          render={(record) => formatOctets(record?.acct_output_octets)}
+        />
+      </SimpleShowLayout>
+      <SimpleShowLayout record={record} direction={"row"}>
+        <TextField source="framed_ip_address" />
+        <TextField source="framed_ipv6_address" />
+        <TextField source="framed_ipv6_prefix" />
+        <TextField source="framed_interface_id" />
+        <TextField source="delegated_ipv6_prefix" />
+      </SimpleShowLayout>
+    </>
   );
 };
 
@@ -112,7 +214,7 @@ const EndpointShowRelations = () => {
           sort={{ field: "updated_at", order: "DESC" }}
           empty="No ports found"
         >
-          <DataTable>
+          <DataTable bulkActionButtons={<ListBulkActions />}>
             <DataTable.Col source="nas_identifier" />
             <DataTable.Col source="nas_port_id" label="Port ID" />
             <DataTable.Col source="created_at" label="First seen">
@@ -127,7 +229,7 @@ const EndpointShowRelations = () => {
       <SimpleShowLayout>
         <ReferenceManyField
           label="Sessions"
-          reference="logs/accounting"
+          reference="accounting_log"
           target="username"
           filter={{
             username: record.username,
@@ -136,46 +238,89 @@ const EndpointShowRelations = () => {
           sort={{ field: "acct_start_time", order: "DESC" }}
           empty="No accounting logs found"
         >
-          <DataTable>
+          <DataTable
+            bulkActionButtons={false}
+            expand={<AccountingExpand />}
+            rowClick=""
+          >
             <DataTable.Col source="nas_identifier" />
             <DataTable.Col source="nas_port_id" label="Port ID" />
 
-            <DataTable.Col source="acct_start_time">
+            <DataTable.Col source="acct_start_time" label="Start time">
               <DateField source="acct_start_time" showTime={true} />
             </DataTable.Col>
-            <DataTable.Col source="acct_stop_time">
-              <DateField source="acct_stop_time" showTime={true} />
+            <DataTable.Col source="acct_stop_time" label="Stop time">
+              <DateField
+                source="acct_stop_time"
+                showTime={true}
+                emptyText="N/A"
+              />
+            </DataTable.Col>
+            <DataTable.Col source="acct_session_time" label="Session time">
+              <FunctionField
+                render={(record) => formatSeconds(record?.acct_session_time)}
+              />
+            </DataTable.Col>
+            <DataTable.Col source="acct_input_octets" label="Input data">
+              <FunctionField
+                render={(record) => formatOctets(record?.acct_input_octets)}
+              />
+            </DataTable.Col>
+            <DataTable.Col source="acct_output_octets" label="Output data">
+              <FunctionField
+                render={(record) => formatOctets(record?.acct_output_octets)}
+              />
             </DataTable.Col>
           </DataTable>
         </ReferenceManyField>
       </SimpleShowLayout>
       <SimpleShowLayout>
         <ReferenceManyField
-          label="Post Authentication logs"
-          reference="logs/post_auth"
+          label="Authentications"
+          reference="authentication_log"
           target="username"
           filter={{
             username: record.username,
             calling_station_id: record.calling_station_id,
           }}
           sort={{ field: "auth_date", order: "DESC" }}
-          empty="No post authentication logs found"
+          empty="No authentication logs found"
         >
-          <DataTable>
+          <DataTable bulkActionButtons={false}>
             <DataTable.Col source="nas_identifier" />
             <DataTable.Col source="nas_port_id" label="Port ID" />
             <DataTable.Col source="auth_date">
               <DateField source="auth_date" showTime={true} />
             </DataTable.Col>
             <DataTable.Col source="reply" />
-            <DataTable.Col source="matched_policy">
-              <EndPointShowAuthLogsPolicyLink />
+            <DataTable.Col source="matched_policy_id">
+              <ReferenceField reference="policy" source="matched_policy_id" />
             </DataTable.Col>
             <DataTable.Col source="error_message" />
           </DataTable>
         </ReferenceManyField>
       </SimpleShowLayout>
     </>
+  );
+};
+
+const isMacAddress = (address: string): boolean => {
+  const regex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+  return regex.test(address);
+};
+
+const EndpointShowTitle = () => {
+  const record = useRecordContext();
+
+  if (!record) return null;
+
+  if (isMacAddress(record?.username))
+    return <span>Endpoint: {record?.username}</span>;
+
+  return (
+    <span>
+      Endpoint: {record?.username} ({record?.calling_station_id})
+    </span>
   );
 };
 
@@ -187,11 +332,18 @@ const EndpointShowActions = () => (
 );
 
 export const EndpointShow = () => (
-  <Show actions={<EndpointShowActions />}>
-    <SimpleShowLayout>
+  <Show actions={<EndpointShowActions />} title={<EndpointShowTitle />}>
+    <SimpleShowLayout direction={"row"}>
       <TextField source="username" />
       <TextField source="calling_station_id" />
       <TextField source="description" />
+      <ReferenceField
+        reference="endpoint_group"
+        source="group_id"
+        empty="None"
+      />
+    </SimpleShowLayout>
+    <SimpleShowLayout direction={"row"}>
       <SelectField
         source="state"
         choices={[
@@ -201,8 +353,9 @@ export const EndpointShow = () => (
           { id: "authorized", name: "Authorized" },
         ]}
       />
-      <ReferenceField reference="endpoint_group" source="group_id" />
       <TextField source="oui" />
+    </SimpleShowLayout>
+    <SimpleShowLayout direction={"row"}>
       <TextField
         source="nas_identifier"
         label="Latest NAS Identifier"
@@ -213,6 +366,8 @@ export const EndpointShow = () => (
         label="Latest NAS Port"
         emptyText="None"
       />
+    </SimpleShowLayout>
+    <SimpleShowLayout direction={"row"}>
       <DateField source="created_at" showTime={true} />
       <DateField source="updated_at" showTime={true} />
     </SimpleShowLayout>

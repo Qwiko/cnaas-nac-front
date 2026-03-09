@@ -1,7 +1,6 @@
 import { Button, Tooltip, Typography } from "@mui/material";
 import { Grid } from "@mui/system";
 import {
-  BooleanField,
   Create,
   DataTable,
   List,
@@ -22,30 +21,47 @@ import {
   FormDataConsumer,
   ReferenceInput,
   ReferenceField,
-  useListContext,
   useRecordContext,
   DeleteButton,
   EditButton,
   CloneButton,
   ButtonProps,
   TopToolbar,
+  DatagridConfigurable,
+  DateField,
+  SelectColumnsButton,
+  FilterButton,
+  CreateButton,
+  ExportButton,
 } from "react-admin";
 import AddIcon from "@mui/icons-material/Add";
 import { useFormContext } from "react-hook-form";
+import { ColoredBooleanField, ListBulkActions } from "../shared/Shared";
+// eslint-disable-next-line react/jsx-key
 const PolicyFilters = [<TextInput label="Search" source="q" alwaysOn />];
 
-export const PolicyList = () => (
-  <List filters={PolicyFilters}>
-    <DataTable>
-      <DataTable.Col source="name" />
-      <DataTable.Col source="description" />
-      <DataTable.NumberCol source="priority" />
+const PolicyListActions = () => (
+  <TopToolbar>
+    <SelectColumnsButton />
+    <FilterButton />
+    <CreateButton />
+    <ExportButton />
+  </TopToolbar>
+);
 
-      <DataTable.Col source="match_logic" />
-      <DataTable.Col source="enabled">
-        <BooleanField source="enabled" />
-      </DataTable.Col>
-    </DataTable>
+
+
+export const PolicyList = () => (
+  <List filters={PolicyFilters} actions={<PolicyListActions />}>
+    <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
+      <TextField source="name" />
+      <TextField source="description" />
+      <NumberField source="priority" />
+      <TextField source="match_logic" />
+      <ColoredBooleanField source="enabled" />
+      <DateField source="created_at" showTime={true} />
+      <DateField source="updated_at" showTime={true} />
+    </DatagridConfigurable>
   </List>
 );
 
@@ -58,7 +74,7 @@ const PolicyShowActions = () => (
 );
 
 const PolicyShowConditionValue = () => {
-  const { selectedIds, onToggleItem } = useListContext();
+  // const { selectedIds, onToggleItem } = useListContext();
   const record = useRecordContext();
 
   if (record.attribute == "group_id") {
@@ -119,7 +135,7 @@ export const PolicyShow = () => (
         emptyText="Any"
         choices={[
           { id: "MAB", name: "MAB only" },
-          { id: "EAP", name: "EAP-TLS only" },
+          { id: "EAP", name: "EAP only" },
         ]}
       />
       <SelectField
@@ -130,7 +146,7 @@ export const PolicyShow = () => (
         ]}
       />
 
-      <BooleanField source="enabled" />
+      <ColoredBooleanField source="enabled" />
 
       <ArrayField source="conditions">
         <DataTable bulkActionButtons={false}>
@@ -202,7 +218,7 @@ const PolicyCreateEdit = () => (
     </Grid>
 
     <NumberInput source="priority" defaultValue={100} />
-    <BooleanInput source="enabled" />
+    <BooleanInput source="enabled" isRequired />
     <Typography variant="h6" gutterBottom>
       Pre filters
     </Typography>
@@ -223,7 +239,7 @@ const PolicyCreateEdit = () => (
           resettable
           choices={[
             { id: "MAB", name: "MAB only" },
-            { id: "EAP", name: "EAP-TLS only" },
+            { id: "EAP", name: "EAP only" },
           ]}
         />
       </Grid>
@@ -239,6 +255,7 @@ const PolicyCreateEdit = () => (
         { id: "AND", name: "AND" },
         { id: "OR", name: "OR" },
       ]}
+      defaultValue={"AND"}
     />
 
     <ArrayInput source="conditions">
@@ -258,12 +275,8 @@ const PolicyCreateEdit = () => (
         />
 
         <FormDataConsumer<{ attribute: string }>>
-          {({
-            formData, // The whole form data
-            scopedFormData, // The data for this item of the ArrayInputBase
-            ...rest
-          }) => {
-            if (scopedFormData.attribute == "group_id") {
+          {({ scopedFormData }) => {
+            if (scopedFormData?.attribute == "group_id") {
               return (
                 <>
                   <SelectInput

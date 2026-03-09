@@ -1,12 +1,18 @@
 import {
   Create,
+  CreateButton,
+  DatagridConfigurable,
   DataTable,
+  DateField,
   DeleteButton,
   Edit,
   EditButton,
+  ExportButton,
+  FilterButton,
   List,
-  NumberField,
   ReferenceManyField,
+  SelectColumnsButton,
+  SelectField,
   Show,
   SimpleForm,
   SimpleShowLayout,
@@ -14,14 +20,27 @@ import {
   TextInput,
   TopToolbar,
 } from "react-admin";
+import { ListBulkActions } from "../shared/Shared";
 
+// eslint-disable-next-line react/jsx-key
 const EndpointGroupFilters = [<TextInput label="Search" source="q" alwaysOn />];
 
+const EndpointGroupListActions = () => (
+  <TopToolbar>
+    <SelectColumnsButton />
+    <FilterButton />
+    <CreateButton />
+    <ExportButton />
+  </TopToolbar>
+);
+
 export const EndpointGroupList = () => (
-  <List filters={EndpointGroupFilters}>
-    <DataTable>
-      <DataTable.Col source="name" />
-    </DataTable>
+  <List filters={EndpointGroupFilters} actions={<EndpointGroupListActions />}>
+    <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
+      <TextField source="name" />
+      <DateField source="created_at" showTime={true} />
+      <DateField source="updated_at" showTime={true} />
+    </DatagridConfigurable>
   </List>
 );
 
@@ -44,7 +63,17 @@ export const EndpointGroupShow = () => (
         <DataTable bulkActionButtons={false}>
           <DataTable.Col source="username" />
           <DataTable.Col source="calling_station_id" />
-          <DataTable.Col source="state" />
+          <DataTable.Col source="state">
+            <SelectField
+              source="state"
+              choices={[
+                { id: "discovered", name: "Discovered" },
+                { id: "pending", name: "Pending" },
+                { id: "rejected", name: "Rejected" },
+                { id: "authorized", name: "Authorized" },
+              ]}
+            />
+          </DataTable.Col>
           <DataTable.Col source="oui" />
         </DataTable>
       </ReferenceManyField>
@@ -55,7 +84,7 @@ export const EndpointGroupShow = () => (
 export const EndpointGroupEdit = () => (
   <Edit redirect="show" mutationMode="pessimistic">
     <SimpleForm>
-      <TextInput source="name" />
+      <TextInput source="name" isRequired />
     </SimpleForm>
   </Edit>
 );
@@ -63,7 +92,7 @@ export const EndpointGroupEdit = () => (
 export const EndpointGroupCreate = () => (
   <Create redirect="show" mutationMode="pessimistic">
     <SimpleForm>
-      <TextInput source="name" />
+      <TextInput source="name" isRequired />
     </SimpleForm>
   </Create>
 );
