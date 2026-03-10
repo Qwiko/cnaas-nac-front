@@ -48,8 +48,8 @@ const dataProvider: DataProvider = {
     const query = {
       ...flattenParamFilters,
       order_by: (order == "ASC" ? "+" : "-") + field,
-      page: page ? page : undefined,
-      size: perPage ? perPage : undefined,
+      page: page ?? undefined,
+      size: perPage ?? undefined,
     };
     const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
