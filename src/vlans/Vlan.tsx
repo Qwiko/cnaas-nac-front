@@ -8,7 +8,7 @@ import {
 } from "react-admin";
 
 export const VlanList = () => (
-  <List>
+  <List pagination={false}>
     <DataTable>
       <DataTable.Col source="vlan" />
       <DataTable.Col source="name" />

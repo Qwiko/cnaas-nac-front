@@ -20,7 +20,11 @@ import {
   TextInput,
   TopToolbar,
 } from "react-admin";
-import { ListBulkActions } from "../shared/Shared";
+import {
+  ListBulkActions,
+  NACDefaultPagination,
+  NACPagination,
+} from "../shared/Shared";
 
 // eslint-disable-next-line react/jsx-key
 const EndpointGroupFilters = [<TextInput label="Search" source="q" alwaysOn />];
@@ -35,7 +39,12 @@ const EndpointGroupListActions = () => (
 );
 
 export const EndpointGroupList = () => (
-  <List filters={EndpointGroupFilters} actions={<EndpointGroupListActions />}>
+  <List
+    filters={EndpointGroupFilters}
+    actions={<EndpointGroupListActions />}
+    pagination={<NACPagination />}
+    perPage={NACDefaultPagination}
+  >
     <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
       <TextField source="name" />
       <DateField source="created_at" showTime={true} />

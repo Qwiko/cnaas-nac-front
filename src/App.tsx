@@ -8,7 +8,11 @@ import type { ThemeOptions } from "@mui/material";
 import endpoints from "./endpoints";
 import endpoint_groups from "./endpoint_groups";
 import policies from "./policies";
+import accounting_logs from "./accounting";
+import authentication_logs from "./authentication";
 import vlans from "./vlans";
+
+import { Dashboard } from "./Dashboard";
 
 import { NACLogin } from "./Login";
 
@@ -60,10 +64,13 @@ export const App = () => (
     dataProvider={dataProvider}
     loginPage={NACLogin(redirectLoginUrl)}
     layout={Layout}
+    dashboard={Dashboard}
   >
     <Resource name="endpoint" {...endpoints} />
     <Resource name="endpoint_group" {...endpoint_groups} />
     <Resource name="policy" {...policies} />
+    <Resource name="accounting" {...accounting_logs} />
+    <Resource name="authentication" {...authentication_logs} />
     <Resource name="vlan" {...vlans} />
   </Admin>
 );

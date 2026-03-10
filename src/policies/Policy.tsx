@@ -1,4 +1,4 @@
-import { Button, Tooltip, Typography } from "@mui/material";
+import { Button as MuiButton, Tooltip, Typography } from "@mui/material";
 import { Grid } from "@mui/system";
 import {
   Create,
@@ -33,10 +33,21 @@ import {
   FilterButton,
   CreateButton,
   ExportButton,
+  useParams,
+  LinkBase,
+  Button,
+  CanAccess,
 } from "react-admin";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+
 import AddIcon from "@mui/icons-material/Add";
 import { useFormContext } from "react-hook-form";
-import { ColoredBooleanField, ListBulkActions } from "../shared/Shared";
+import {
+  ColoredBooleanField,
+  ListBulkActions,
+  NACDefaultPagination,
+  NACPagination,
+} from "../shared/Shared";
 // eslint-disable-next-line react/jsx-key
 const PolicyFilters = [<TextInput label="Search" source="q" alwaysOn />];
 
@@ -49,10 +60,13 @@ const PolicyListActions = () => (
   </TopToolbar>
 );
 
-
-
 export const PolicyList = () => (
-  <List filters={PolicyFilters} actions={<PolicyListActions />}>
+  <List
+    filters={PolicyFilters}
+    actions={<PolicyListActions />}
+    pagination={<NACPagination />}
+    perPage={NACDefaultPagination}
+  >
     <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
       <TextField source="name" />
       <TextField source="description" />
@@ -65,30 +79,50 @@ export const PolicyList = () => (
   </List>
 );
 
-const PolicyShowActions = () => (
-  <TopToolbar>
-    <CloneButton />
-    <EditButton />
-    <DeleteButton mutationMode="pessimistic" />
-  </TopToolbar>
-);
+const PolicyShowActions = () => {
+  const { id } = useParams();
+  if (!id) return;
+
+  return (
+    <TopToolbar>
+      <CanAccess action="list" resource="authentication">
+        <Button
+          component={LinkBase}
+          to={{
+            pathname: "/authentication",
+            search: `filter=${JSON.stringify({ matched_policy_id__in: [id] })}`,
+          }}
+          startIcon={<RecentActorsIcon />}
+          label="authentications"
+        >
+          <RecentActorsIcon />
+        </Button>
+      </CanAccess>
+      <CloneButton />
+      <EditButton />
+      <DeleteButton mutationMode="pessimistic" />
+    </TopToolbar>
+  );
+};
 
 const PolicyShowConditionValue = () => {
   // const { selectedIds, onToggleItem } = useListContext();
   const record = useRecordContext();
 
-  if (record.attribute == "group_id") {
+  if (!record) return;
+
+  if (record?.attribute == "group_id") {
     return <ReferenceField reference="endpoint_group" source="value" />;
   } else {
     return <TextField source="value" />;
   }
 };
 
-const AddVlanRepliesButton = (props: ButtonProps) => {
+const AddVlanRepliesButton = () => {
   const { getValues, setValue } = useFormContext();
   return (
     <Tooltip title="Add necessary replies to set a VLAN id.">
-      <Button
+      <MuiButton
         component="label"
         variant="contained"
         onClick={() => {
@@ -111,7 +145,7 @@ const AddVlanRepliesButton = (props: ButtonProps) => {
         startIcon={<AddIcon />}
       >
         Add VLAN replies
-      </Button>
+      </MuiButton>
     </Tooltip>
   );
 };

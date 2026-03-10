@@ -30,7 +30,13 @@ import {
   useGetOne,
   Loading,
 } from "react-admin";
-import { ListBulkActions } from "../shared/Shared";
+import {
+  formatOctets,
+  formatSeconds,
+  ListBulkActions,
+  NACDefaultPagination,
+  NACPagination,
+} from "../shared/Shared";
 
 const EndpointFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -68,7 +74,12 @@ const EndpointListActions = () => (
 );
 
 export const EndpointList = () => (
-  <List filters={EndpointFilters} actions={<EndpointListActions />}>
+  <List
+    filters={EndpointFilters}
+    actions={<EndpointListActions />}
+    pagination={<NACPagination />}
+    perPage={NACDefaultPagination}
+  >
     <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
       <TextField source="username" />
       <TextField source="calling_station_id" />
@@ -95,37 +106,6 @@ export const EndpointList = () => (
   </List>
 );
 
-const formatSeconds = (totalSeconds?: number): string | undefined => {
-  if (!totalSeconds) return;
-
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return [
-    days > 0 && `${days}d`,
-    hours > 0 && `${hours}h`,
-    minutes > 0 && `${minutes}m`,
-    seconds > 0 && `${seconds}s`,
-  ]
-    .filter(Boolean)
-    .join(" ");
-};
-
-const formatOctets = (bytes?: number, decimals = 2): string | undefined => {
-  if (!bytes || bytes === 0) return;
-
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
-
-  // Calculate which index of 'sizes' to use
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-};
-
 const AccountingExpand = () => {
   const recordId = useGetRecordId();
 
@@ -142,7 +122,7 @@ const AccountingExpand = () => {
     <>
       <SimpleShowLayout record={record} direction={"row"}>
         <TextField source="nas_identifier" />
-        <TextField source="nas_port_id" label="Port ID" />
+        <TextField source="nas_port_id" />
       </SimpleShowLayout>
       <SimpleShowLayout record={record} direction={"row"}>
         <DateField
@@ -156,7 +136,6 @@ const AccountingExpand = () => {
           label="Update time"
           emptyText="N/A"
         />
-
         <DateField
           source="acct_stop_time"
           showTime={true}
@@ -166,20 +145,15 @@ const AccountingExpand = () => {
       </SimpleShowLayout>
       <SimpleShowLayout record={record} direction={"row"}>
         <FunctionField
-          // source="acct_session_time"
           label="Session time"
           emptyText="N/A"
           render={(record) => formatSeconds(record?.acct_session_time)}
         />
-        {/* <NumberField source="acct_input_octets" /> */}
         <FunctionField
-          // source="acct_session_time"
           label="Input data"
           render={(record) => formatOctets(record?.acct_input_octets)}
         />
-        {/* <NumberField source="acct_output_octets" /> */}
         <FunctionField
-          // source="acct_session_time"
           label="Output data"
           render={(record) => formatOctets(record?.acct_output_octets)}
         />
@@ -216,7 +190,7 @@ const EndpointShowRelations = () => {
         >
           <DataTable bulkActionButtons={<ListBulkActions />}>
             <DataTable.Col source="nas_identifier" />
-            <DataTable.Col source="nas_port_id" label="Port ID" />
+            <DataTable.Col source="nas_port_id" />
             <DataTable.Col source="created_at" label="First seen">
               <DateField source="created_at" showTime={true} />
             </DataTable.Col>
@@ -228,8 +202,8 @@ const EndpointShowRelations = () => {
       </SimpleShowLayout>
       <SimpleShowLayout>
         <ReferenceManyField
-          label="Sessions"
-          reference="accounting_log"
+          label="Accounting"
+          reference="accounting"
           target="username"
           filter={{
             username: record.username,
@@ -238,13 +212,9 @@ const EndpointShowRelations = () => {
           sort={{ field: "acct_start_time", order: "DESC" }}
           empty="No accounting logs found"
         >
-          <DataTable
-            bulkActionButtons={false}
-            expand={<AccountingExpand />}
-            rowClick=""
-          >
+          <DataTable bulkActionButtons={false} expand={<AccountingExpand />}>
             <DataTable.Col source="nas_identifier" />
-            <DataTable.Col source="nas_port_id" label="Port ID" />
+            <DataTable.Col source="nas_port_id" />
 
             <DataTable.Col source="acct_start_time" label="Start time">
               <DateField source="acct_start_time" showTime={true} />
@@ -277,7 +247,7 @@ const EndpointShowRelations = () => {
       <SimpleShowLayout>
         <ReferenceManyField
           label="Authentications"
-          reference="authentication_log"
+          reference="authentication"
           target="username"
           filter={{
             username: record.username,
