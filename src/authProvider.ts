@@ -62,6 +62,14 @@ const authProvider: AuthProvider = {
     if (accessToken) {
       localStorage.setItem("access_token", accessToken);
 
+      // Fetching permssions
+      const response = await fetch(`${apiUrl}/auth/permissions`, {
+        method: "GET",
+        headers: createHeader(),
+      });
+      const permission_data = await response.json();
+      localStorage.setItem("permissions", JSON.stringify(permission_data));
+
       // Redirect to start
       window.location.replace(window.location.origin);
 
@@ -71,7 +79,30 @@ const authProvider: AuthProvider = {
       return Promise.reject();
     }
   },
-  getPermissions: () => Promise.resolve(),
+  async canAccess({ action, resource }) {
+    const permissionsString = localStorage.getItem("permissions");
+    const permissions = permissionsString
+      ? JSON.parse(permissionsString)
+      : null;
+
+    const actionMap = {
+      list: "GET",
+      show: "GET",
+      create: "POST",
+      update: "PUT",
+      delete: "DELETE",
+    };
+
+    const mappedAction = actionMap[action as keyof typeof actionMap];
+
+    const permissionActions = permissions[resource];
+
+    if (!permissionActions || !Array.isArray(permissionActions)) {
+      return false;
+    }
+
+    return permissionActions.includes(mappedAction);
+  },
   getIdentity: () => {
     return fetch(`${apiUrl}/auth/me`, {
       method: "GET",
