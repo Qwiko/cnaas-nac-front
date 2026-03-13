@@ -10,6 +10,7 @@ import policies from "./policies";
 import accounting_logs from "./accounting";
 import authentication_logs from "./authentication";
 import vlans from "./vlans";
+import radius_clients from "./radius_clients";
 
 import { Dashboard } from "./Dashboard";
 
@@ -36,6 +37,7 @@ export const App = () => (
     <Resource name="accounting" {...accounting_logs} />
     <Resource name="authentication" {...authentication_logs} />
     <Resource name="vlan" {...vlans} />
+    <Resource name="radius_client" {...radius_clients} />
     <CustomRoutes>
       <Route path="/endpoint_import" element={<EndpointImport />} />
     </CustomRoutes>
