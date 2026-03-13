@@ -1,5 +1,7 @@
 import {
-  Divider,
+  Box,
+  Chip,
+  Grid,
   Paper,
   Table,
   TableBody,
@@ -7,20 +9,57 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import {
-  CanAccess,
-  Loading,
-  Title,
-  useCanAccess,
-  useGetList,
-} from "react-admin";
+
+import { CanAccess, Title, useGetList } from "react-admin";
 import { Link } from "react-router";
 
-const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+interface SummaryTableProps {
+  title: string;
+  rows: Array<{
+    id: string;
+    label: string;
+    totalCount: number;
+    pathname: string;
+    filter: Record<string, unknown>;
+  }>;
+}
+
+const SummaryTable = ({ title, rows }: SummaryTableProps) => {
+  return (
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell>{title}</TableCell>
+            <TableCell align="right">Total</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.id}>
+              <TableCell component="th" scope="row">
+                {row.label}
+              </TableCell>
+              <TableCell align="right">
+                <Link
+                  to={{
+                    pathname: row.pathname,
+                    search: `filter=${encodeURIComponent(JSON.stringify(row.filter))}`,
+                  }}
+                >
+                  <Chip label={row.totalCount} />
+                </Link>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
 
 const EndpointSummary = () => {
   const { total: discoveredTotal = 0 } = useGetList("endpoint", {
@@ -43,45 +82,38 @@ const EndpointSummary = () => {
     filter: { state: "rejected" },
   });
 
-  const mapping = {
-    discovered: discoveredTotal,
-    pending: pendingTotal,
-    authorized: authorizedTotal,
-    rejected: rejectedTotal,
-  };
+  const rows = [
+    {
+      id: "discoveredEndpoints",
+      label: "Discovered endpoints",
+      totalCount: discoveredTotal ?? 0,
+      pathname: "/endpoint",
+      filter: { state__in: "discovered" },
+    },
+    {
+      id: "pendingEndpoints",
+      label: "Pending endpoints",
+      totalCount: pendingTotal ?? 0,
+      pathname: "/endpoint",
+      filter: { state__in: "pending" },
+    },
+    {
+      id: "authorizedEndpoints",
+      label: "Authorized endpoints",
+      totalCount: authorizedTotal ?? 0,
+      pathname: "/endpoint",
+      filter: { state__in: "authorized" },
+    },
+    {
+      id: "rejectedEndpoints",
+      label: "Rejected endpoints",
+      totalCount: rejectedTotal ?? 0,
+      pathname: "/endpoint",
+      filter: { state__in: "rejected" },
+    },
+  ];
 
-  return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Endpoints</TableCell>
-            <TableCell align="right">Total</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {Object.entries(mapping).map(([stateName, totalCount]) => (
-            <TableRow key={stateName}>
-              <TableCell component="th" scope="row">
-                {capitalize(stateName)} Endpoints:{" "}
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  // color="inherit"
-                  to={{
-                    pathname: "/endpoint",
-                    search: `filter=${JSON.stringify({ state__in: [stateName] })}`,
-                  }}
-                >
-                  {totalCount}
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+  return <SummaryTable title="Endpoint" rows={rows} />;
 };
 
 const AccountingSummary = () => {
@@ -90,71 +122,82 @@ const AccountingSummary = () => {
     filter: { acct_stop_time__isnull: true },
   });
 
-  const mapping = {
-    active: {
-      totalCount: activeSessionsTotal,
+  const rows = [
+    {
+      id: "activeSessions",
+      label: "Active sessions",
+      totalCount: activeSessionsTotal ?? 0,
+      pathname: "/accounting",
       filter: { acct_stop_time__isnull: true },
     },
-  };
+  ];
 
-  return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Accounting</TableCell>
-            <TableCell align="right">Total</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {Object.entries(mapping).map(
-            ([stateName, { totalCount, filter }]) => (
-              <TableRow key={stateName}>
-                <TableCell component="th" scope="row">
-                  {capitalize(stateName)} Sessions:{" "}
-                </TableCell>
-                <TableCell align="right">
-                  <Link
-                    to={{
-                      pathname: "/accounting",
-                      search: `filter=${JSON.stringify(filter)}`,
-                    }}
-                  >
-                    {totalCount}
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ),
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+  return <SummaryTable title="Accounting" rows={rows} />;
+};
+
+const AuthenticationSummary = () => {
+  const now = new Date();
+
+  now.setMinutes(0, 0, 0);
+
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+  const todayStart = new Date(now.setHours(0, 0, 0, 0));
+
+  const { total: lastHourCount } = useGetList("authentication", {
+    pagination: { page: 1, perPage: 0 },
+    filter: { auth_date__gte: oneHourAgo.toISOString() },
+  });
+
+  const { total: todayCount } = useGetList("authentication", {
+    pagination: { page: 1, perPage: 0 },
+    filter: { auth_date__gte: todayStart.toISOString() },
+  });
+
+  const rows = [
+    {
+      id: "lastHour",
+      label: "Last Hour",
+      totalCount: lastHourCount ?? 0,
+      pathname: "/authentication",
+      filter: { auth_date__gte: oneHourAgo.toISOString() },
+    },
+    {
+      id: "today",
+      label: "Today",
+      totalCount: todayCount ?? 0,
+      pathname: "/authentication",
+      filter: { auth_date__gte: todayStart.toISOString() },
+    },
+  ];
+
+  return <SummaryTable title="Authentication" rows={rows} />;
 };
 
 export const Dashboard = () => {
   return (
     <Card>
-      <Title title="CNaaS NAC" />
+      <Title title="Dashboard" />
       <CardContent>
-        <Typography gutterBottom variant="h5" component="div">
-          Dashboard
-        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Grid container spacing={2}>
+            <CanAccess action="list" resource="endpoint">
+              <Grid item size={4}>
+                <EndpointSummary />
+              </Grid>
+            </CanAccess>
+            <CanAccess action="list" resource="accounting">
+              <Grid item size={4}>
+                <AccountingSummary />
+              </Grid>
+            </CanAccess>
+            <CanAccess action="list" resource="authentication">
+              <Grid item size={4}>
+                <AuthenticationSummary />
+              </Grid>
+            </CanAccess>
+          </Grid>
+        </Box>
       </CardContent>
-      <CanAccess action="list" resource="endpoint">
-        <Card>
-          <CardContent>
-            <EndpointSummary />
-          </CardContent>
-        </Card>
-      </CanAccess>
-      <CanAccess action="list" resource="accounting">
-        <Card>
-          <CardContent>
-            <AccountingSummary />
-          </CardContent>
-        </Card>
-      </CanAccess>
     </Card>
   );
 };

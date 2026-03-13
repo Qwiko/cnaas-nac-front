@@ -29,6 +29,9 @@ import {
   useGetRecordId,
   useGetOne,
   Loading,
+  Button,
+  LinkBase,
+  CanAccess,
 } from "react-admin";
 import {
   formatOctets,
@@ -37,6 +40,8 @@ import {
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
+
+import UploadIcon from "@mui/icons-material/Upload";
 
 const EndpointFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -69,6 +74,18 @@ const EndpointListActions = () => (
     <SelectColumnsButton />
     <FilterButton />
     <CreateButton />
+    <CanAccess action="create" resource="endpoint">
+      <Button
+        component={LinkBase}
+        to={{
+          pathname: "/endpoint_import",
+        }}
+        startIcon={<UploadIcon />}
+        label="Import"
+      >
+        <UploadIcon />
+      </Button>
+    </CanAccess>
     <ExportButton />
   </TopToolbar>
 );
@@ -83,6 +100,7 @@ export const EndpointList = () => (
     <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
       <TextField source="username" />
       <TextField source="calling_station_id" />
+      <TextField source="description" />
       <ReferenceField
         reference="endpoint_group"
         source="group_id"
@@ -180,11 +198,7 @@ const EndpointShowRelations = () => {
         <ReferenceManyField
           label="Ports"
           reference="nas_port"
-          target="username"
-          filter={{
-            username: record.username,
-            calling_station_id: record.calling_station_id,
-          }}
+          target="endpoint_id"
           sort={{ field: "updated_at", order: "DESC" }}
           empty="No ports found"
         >
@@ -204,11 +218,7 @@ const EndpointShowRelations = () => {
         <ReferenceManyField
           label="Accounting"
           reference="accounting"
-          target="username"
-          filter={{
-            username: record.username,
-            calling_station_id: record.calling_station_id,
-          }}
+          target="endpoint_id"
           sort={{ field: "acct_start_time", order: "DESC" }}
           empty="No accounting logs found"
         >
@@ -248,11 +258,7 @@ const EndpointShowRelations = () => {
         <ReferenceManyField
           label="Authentications"
           reference="authentication"
-          target="username"
-          filter={{
-            username: record.username,
-            calling_station_id: record.calling_station_id,
-          }}
+          target="endpoint_id"
           sort={{ field: "auth_date", order: "DESC" }}
           empty="No authentication logs found"
         >
@@ -285,11 +291,11 @@ const EndpointShowTitle = () => {
   if (!record) return null;
 
   if (isMacAddress(record?.username))
-    return <span>Endpoint: {record?.username}</span>;
+    return <span>Endpoint {record?.username}</span>;
 
   return (
     <span>
-      Endpoint: {record?.username} ({record?.calling_station_id})
+      Endpoint {record?.username} ({record?.calling_station_id})
     </span>
   );
 };

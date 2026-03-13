@@ -95,7 +95,7 @@ const dataProvider: DataProvider = {
 
     flattenParamFilters = Object.fromEntries(
       Object.entries(flattenParamFilters).map(([key, value]) => {
-        if (typeof value == "list") {
+        if (Array.isArray(value)) {
           return [key, value.join(",")];
         }
 
@@ -155,16 +155,16 @@ const dataProvider: DataProvider = {
   },
 
   delete: async (resource, params) => {
-    const { json } = await httpClient(`${apiUrl}/${resource}/${params.id}`, {
+    await httpClient(`${apiUrl}/${resource}/${params.id}`, {
       method: "DELETE",
       headers: createHeader(),
     });
-    return { data: json };
+    return { data: { id: params.id } };
   },
 
   // json-server doesn't handle filters on DELETE route, so we fallback to calling DELETE n times instead
   deleteMany: async (resource, params) => {
-    const responses = await Promise.all(
+    await Promise.all(
       params.ids.map((id) =>
         httpClient(`${apiUrl}/${resource}/${id}`, {
           method: "DELETE",
@@ -172,7 +172,11 @@ const dataProvider: DataProvider = {
         }),
       ),
     );
-    return { data: responses.map(({ json }) => json.id) };
+    return {
+      data: params.ids.map((id) => {
+        id;
+      }),
+    };
   },
 };
 
