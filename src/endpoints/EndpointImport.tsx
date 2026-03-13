@@ -28,6 +28,7 @@ import Papa from "papaparse";
 import { useState } from "react";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { useFormContext } from "react-hook-form";
+import { isMacAddress } from "../shared/Shared";
 
 const csvTemplate =
   "username,group_name,group_id,description\n00:00:00:00:00:00,group_name,,example description\n11:22:33:44:55:66,,1,";
@@ -91,6 +92,10 @@ export const EndpointImport = () => {
 
         for (const [index, row] of rows.entries()) {
           const rowNumber = index + 2;
+          if (row.username && !isMacAddress(row.username)) {
+            newErrors.push(`Row ${rowNumber}: Username must be a mac address.`);
+          }
+
           if (!row.username || (!row.group_name && !row.group_id)) {
             newErrors.push(
               `Row ${rowNumber}: username and group_name or group_id fields are required.`,
@@ -108,13 +113,6 @@ export const EndpointImport = () => {
           }
         }
 
-        // if (newErrors.length !== 0) {
-        //   setImportErrors(newErrors);
-        //   setIsProcessing(false);
-        //   setStep(0);
-        //   return;
-        // }
-
         try {
           // 1. Fetch existing IDs from the database
           const rowUsernames = rows.map((row) => row.username).filter(Boolean);
@@ -131,7 +129,10 @@ export const EndpointImport = () => {
           if (rowUsernames.length > 0) {
             const { data: existingRecords } =
               await dataProvider.getManyReference("endpoint", {
-                filter: { calling_station_id__in: rowUsernames },
+                filter: {
+                  username__in: rowUsernames,
+                  calling_station_id__in: rowUsernames,
+                },
                 pagination: { page: 1, perPage: 1000 },
                 sort: { field: "username", order: "ASC" },
                 target: "",

@@ -6,6 +6,11 @@ import {
   Pagination,
 } from "react-admin";
 
+export const isMacAddress = (address: string): boolean => {
+  const regex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+  return regex.test(address);
+};
+
 export const NACDefaultPagination = 50;
 
 export const NACPagination = () => (

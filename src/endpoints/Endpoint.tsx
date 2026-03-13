@@ -36,6 +36,7 @@ import {
 import {
   formatOctets,
   formatSeconds,
+  isMacAddress,
   ListBulkActions,
   NACDefaultPagination,
   NACPagination,
@@ -280,10 +281,7 @@ const EndpointShowRelations = () => {
   );
 };
 
-const isMacAddress = (address: string): boolean => {
-  const regex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-  return regex.test(address);
-};
+
 
 const EndpointShowTitle = () => {
   const record = useRecordContext();
