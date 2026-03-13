@@ -3,7 +3,7 @@ import { VlanList, VlanShow } from "./Vlan";
 
 export default {
   list: VlanList,
-  show: VlanShow,
+  // show: VlanShow,
   icon: LanIcon,
   // recordRepresentation: (record: Network) => `"${record.reference}"`,
 };
