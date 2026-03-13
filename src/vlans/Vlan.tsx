@@ -9,7 +9,7 @@ import {
 
 export const VlanList = () => (
   <List pagination={false}>
-    <DataTable>
+    <DataTable bulkActionButtons={false}>
       <DataTable.Col source="vlan" />
       <DataTable.Col source="name" />
     </DataTable>
