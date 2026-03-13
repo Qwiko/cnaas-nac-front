@@ -1,4 +1,4 @@
-import GroupIcon from '@mui/icons-material/Group';
+import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import {
   RadiusClientList,
   RadiusClientShow,
@@ -11,6 +11,6 @@ export default {
   show: RadiusClientShow,
   edit: RadiusClientEdit,
   create: RadiusClientCreate,
-  icon: GroupIcon,
+  icon: DeviceHubIcon,
   // recordRepresentation: (record: Network) => `"${record.reference}"`,
 };
