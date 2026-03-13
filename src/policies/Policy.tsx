@@ -217,6 +217,17 @@ export const PolicyShow = () => (
           </DataTable.Col>
         </DataTable>
       </ArrayField>
+      <Typography variant="h7" gutterBottom>
+        Post security
+      </Typography>
+      <SelectField
+        source="port_locking"
+        choices={[
+          { id: "SWITCH", name: "Switch" },
+          { id: "SWITCH_PORT", name: "Switch and port" },
+        ]}
+        emptyText="Not used"
+      />
       <ArrayField source="replies">
         <DataTable bulkActionButtons={false}>
           <DataTable.Col source="attribute">
@@ -240,6 +251,13 @@ export const PolicyShow = () => (
   </Show>
 );
 
+const PolicyCreateEditTransform = (data) => ({
+  ...data,
+  port_type: data.port_type === "null" ? null : data.port_type,
+  client_type: data.client_type === "null" ? null : data.client_type,
+  port_locking: data.port_locking === "null" ? null : data.port_locking,
+});
+
 const PolicyCreateEdit = () => (
   <SimpleForm>
     <Grid container spacing={4}>
@@ -261,20 +279,28 @@ const PolicyCreateEdit = () => (
         <SelectInput
           source="port_type"
           resettable
+          emptyText="Any"
+          emptyValue="null"
+          defaultValue="null"
           choices={[
             { id: "Ethernet", name: "Wired only" },
             { id: "Wireless-802.11", name: "Wireless only" },
           ]}
+          format={(v) => (v == null ? "null" : v)}
         />
       </Grid>
       <Grid size={6}>
         <SelectInput
           source="client_type"
           resettable
+          emptyText="Any"
+          emptyValue="null"
+          defaultValue="null"
           choices={[
             { id: "MAB", name: "MAB only" },
             { id: "EAP", name: "EAP only" },
           ]}
+          format={(v) => (v == null ? "null" : v)}
         />
       </Grid>
     </Grid>
@@ -355,10 +381,14 @@ const PolicyCreateEdit = () => (
     <SelectInput
       source="port_locking"
       resettable
+      emptyText="Not used"
+      emptyValue="null"
+      defaultValue="null"
       choices={[
         { id: "SWITCH", name: "Switch" },
         { id: "SWITCH_PORT", name: "Switch and port" },
       ]}
+      format={(v) => (v == null ? "null" : v)}
     />
     <Grid container spacing={4} columnSpacing={4} columns={16}>
       <Grid size={4}>
@@ -391,13 +421,17 @@ const PolicyCreateEdit = () => (
 );
 
 export const PolicyEdit = () => (
-  <Edit redirect="show" mutationMode="pessimistic">
+  <Edit
+    redirect="show"
+    mutationMode="pessimistic"
+    transform={PolicyCreateEditTransform}
+  >
     <PolicyCreateEdit />
   </Edit>
 );
 
 export const PolicyCreate = () => (
-  <Create redirect="show">
+  <Create redirect="show" transform={PolicyCreateEditTransform}>
     <PolicyCreateEdit />
   </Create>
 );
