@@ -28,8 +28,6 @@ const authProvider: AuthProvider = {
       });
   },
   async checkError(error) {
-    console.log("In checkerror");
-
     const status = error.status;
     if (status === 401) {
       localStorage.removeItem("access_token");
@@ -89,6 +87,7 @@ const authProvider: AuthProvider = {
       list: "GET",
       show: "GET",
       create: "POST",
+      edit: "PUT",
       update: "PUT",
       delete: "DELETE",
     };
