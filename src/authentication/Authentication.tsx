@@ -1,6 +1,7 @@
 import {
   DatagridConfigurable,
   DateField,
+  DateTimeInput,
   ExportButton,
   FilterButton,
   List,
@@ -50,6 +51,10 @@ const AuthenticationFilters = [
     source="reply"
     resettable
   />,
+  // eslint-disable-next-line react/jsx-key
+  <DateTimeInput label="Auth date gte" source="auth_date__gte" />,
+  // eslint-disable-next-line react/jsx-key
+  <DateTimeInput label="Auth date lte" source="auth_date__lte" />,
 ];
 
 const AuthenticationListActions = () => (
