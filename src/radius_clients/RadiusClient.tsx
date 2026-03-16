@@ -49,6 +49,7 @@ export const RadiusClientList = () => (
       <TextField source="name" />
       <TextField source="network" />
       <TextField source="description" />
+      <TextField source="server" />
       <DateField source="created_at" showTime={true} />
       <DateField source="updated_at" showTime={true} />
     </DatagridConfigurable>
@@ -68,6 +69,7 @@ export const RadiusClientShow = () => (
       <TextField source="name" />
       <TextField source="network" />
       <TextField source="description" />
+      <TextField source="server" />
       <TextField source="secret" />
     </SimpleShowLayout>
   </Show>
@@ -79,6 +81,7 @@ export const RadiusClientEdit = () => (
       <TextInput source="name" isRequired />
       <TextInput source="network" isRequired />
       <TextInput source="description" />
+      <TextInput source="server" />
       <TextInput source="secret" isRequired />
     </SimpleForm>
   </Edit>
@@ -90,6 +93,7 @@ export const RadiusClientCreate = () => (
       <TextInput source="name" isRequired />
       <TextInput source="network" isRequired />
       <TextInput source="description" />
+      <TextInput source="server" defaultValue={"default"} />
       <TextInput source="secret" isRequired />
     </SimpleForm>
   </Create>
