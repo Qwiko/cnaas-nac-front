@@ -194,7 +194,8 @@ export const PolicyShow = () => (
                 { id: "calling_station_id", name: "Calling Station ID" },
                 { id: "called_station_id", name: "Called Station ID" },
                 { id: "nas_ip_address", name: "NAS IP Address" },
-                { id: "group_id", name: "Group" },
+                { id: "group_id", name: "Endpoint group" },
+                { id: "ldap_groups", name: "LDAP group" },
               ]}
             />
           </DataTable.Col>
@@ -329,7 +330,8 @@ const PolicyCreateEdit = () => (
             { id: "calling_station_id", name: "Calling Station ID" },
             { id: "called_station_id", name: "Called Station ID" },
             { id: "nas_ip_address", name: "NAS IP Address" },
-            { id: "group_id", name: "Endpoint Group" },
+            { id: "group_id", name: "Endpoint group" },
+            { id: "ldap_groups", name: "LDAP group" },
           ]}
           isRequired
         />
@@ -352,6 +354,17 @@ const PolicyCreateEdit = () => (
                   />
                 </>
               );
+            } else if (scopedFormData?.attribute == "ldap_groups") {
+              return (
+                <>
+                  <SelectInput
+                    source="operator"
+                    choices={[{ id: "in_list", name: "In list" }]}
+                    isRequired
+                  />
+                  <TextInput source="value" isRequired />
+                </>
+              );
             }
             return (
               <>
@@ -364,7 +377,6 @@ const PolicyCreateEdit = () => (
                     { id: "startswith", name: "Starts with" },
                     { id: "endswith", name: "Ends with" },
                     { id: "regex", name: "Regex" },
-                    { id: "in_list", name: "In list" },
                   ]}
                   isRequired
                 />
