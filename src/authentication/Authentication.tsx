@@ -4,6 +4,7 @@ import {
   DateTimeInput,
   ExportButton,
   FilterButton,
+  FunctionField,
   List,
   ReferenceArrayInput,
   ReferenceField,
@@ -91,7 +92,19 @@ export const AuthenticationList = () => (
 export const AuthenticationShow = () => (
   <Show actions={false}>
     <SimpleShowLayout direction={"row"}>
-      <TextField source="username" />
+      <FunctionField
+        source="username"
+        label="Username"
+        render={(record) =>
+          record.endpoint_id ? (
+            <ReferenceField reference="endpoint" source="endpoint_id">
+              <TextField source="username" />
+            </ReferenceField>
+          ) : (
+            <TextField source="username" />
+          )
+        }
+      />
       <TextField source="calling_station_id" />
     </SimpleShowLayout>
     <SimpleShowLayout direction={"row"}>

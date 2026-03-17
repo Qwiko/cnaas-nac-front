@@ -1,11 +1,12 @@
 import {
-  BooleanInput,
   DatagridConfigurable,
   DateField,
   ExportButton,
   FilterButton,
   FunctionField,
   List,
+  NullableBooleanInput,
+  ReferenceField,
   SelectColumnsButton,
   Show,
   SimpleShowLayout,
@@ -33,7 +34,10 @@ const AccountingFilters = [
   // eslint-disable-next-line react/jsx-key
   <TextInput label="NAS Port" source="nas_port_id__ilike" />,
   // eslint-disable-next-line react/jsx-key
-  <BooleanInput label="Active sessions" source="acct_stop_time__isnull" />,
+  <NullableBooleanInput
+    label="Active sessions"
+    source="acct_stop_time__isnull"
+  />,
 ];
 
 const AccountingListActions = () => (
@@ -73,7 +77,19 @@ export const AccountingList = () => (
 export const AccountingShow = () => (
   <Show actions={false}>
     <SimpleShowLayout direction={"row"}>
-      <TextField source="username" />
+      <FunctionField
+        source="username"
+        label="Username"
+        render={(record) =>
+          record.endpoint_id ? (
+            <ReferenceField reference="endpoint" source="endpoint_id">
+              <TextField source="username" />
+            </ReferenceField>
+          ) : (
+            <TextField source="username" />
+          )
+        }
+      />
       <TextField source="calling_station_id" />
     </SimpleShowLayout>
     <SimpleShowLayout direction={"row"}>
