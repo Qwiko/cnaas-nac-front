@@ -25,7 +25,6 @@ import {
   DeleteButton,
   EditButton,
   CloneButton,
-  ButtonProps,
   TopToolbar,
   DatagridConfigurable,
   DateField,
