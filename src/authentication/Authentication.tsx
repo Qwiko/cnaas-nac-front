@@ -56,6 +56,8 @@ const AuthenticationFilters = [
   <DateTimeInput label="Auth date gte" source="auth_date__gte" />,
   // eslint-disable-next-line react/jsx-key
   <DateTimeInput label="Auth date lte" source="auth_date__lte" />,
+  // eslint-disable-next-line react/jsx-key
+  <TextInput label="NAS IP Address In" source="nas_ip_address__in" />,
 ];
 
 const AuthenticationListActions = () => (

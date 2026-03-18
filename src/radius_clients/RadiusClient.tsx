@@ -1,30 +1,32 @@
 import {
+  Button,
   Create,
   CreateButton,
   DatagridConfigurable,
-  DataTable,
   DateField,
   DeleteButton,
   Edit,
   EditButton,
   ExportButton,
   FilterButton,
+  LinkBase,
   List,
-  ReferenceManyField,
   SelectColumnsButton,
-  SelectField,
   Show,
   SimpleForm,
   SimpleShowLayout,
   TextField,
   TextInput,
   TopToolbar,
+  useRecordContext,
 } from "react-admin";
 import {
   ListBulkActions,
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 
 // eslint-disable-next-line react/jsx-key
 const RadiusClientFilters = [<TextInput label="Search" source="q" alwaysOn />];
@@ -56,12 +58,40 @@ export const RadiusClientList = () => (
   </List>
 );
 
-const RadiusClientShowActions = () => (
-  <TopToolbar>
-    <EditButton />
-    <DeleteButton mutationMode="pessimistic" />
-  </TopToolbar>
-);
+const RadiusClientShowActions = () => {
+  const record = useRecordContext();
+
+  if (!record) return null;
+
+  return (
+    <TopToolbar>
+      <Button
+        component={LinkBase}
+        to={{
+          pathname: "/accounting",
+          search: `filter=${JSON.stringify({ nas_ip_address__in: record?.network })}`,
+        }}
+        startIcon={<RecentActorsIcon />}
+        label="accountings"
+      >
+        <ListAltIcon />
+      </Button>
+      <Button
+        component={LinkBase}
+        to={{
+          pathname: "/authentication",
+          search: `filter=${JSON.stringify({ nas_ip_address__in: record?.network })}`,
+        }}
+        startIcon={<RecentActorsIcon />}
+        label="authentications"
+      >
+        <RecentActorsIcon />
+      </Button>
+      <EditButton />
+      <DeleteButton mutationMode="pessimistic" />
+    </TopToolbar>
+  );
+};
 
 export const RadiusClientShow = () => (
   <Show actions={<RadiusClientShowActions />}>

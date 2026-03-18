@@ -38,6 +38,8 @@ const AccountingFilters = [
     label="Active sessions"
     source="acct_stop_time__isnull"
   />,
+  // eslint-disable-next-line react/jsx-key
+  <TextInput label="NAS IP Address In" source="nas_ip_address__in" />,
 ];
 
 const AccountingListActions = () => (
