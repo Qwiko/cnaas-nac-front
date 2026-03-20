@@ -1,6 +1,7 @@
 import {
   DatagridConfigurable,
   DateField,
+  DeleteButton,
   ExportButton,
   FilterButton,
   FunctionField,
@@ -50,6 +51,12 @@ const AccountingListActions = () => (
   </TopToolbar>
 );
 
+const AccountingShowActions = () => (
+  <TopToolbar>
+    <DeleteButton mutationMode="pessimistic"/>
+  </TopToolbar>
+);
+
 export const AccountingList = () => (
   <List
     filters={AccountingFilters}
@@ -77,7 +84,7 @@ export const AccountingList = () => (
 );
 
 export const AccountingShow = () => (
-  <Show actions={false}>
+  <Show actions={AccountingShowActions}>
     <SimpleShowLayout direction={"row"}>
       <FunctionField
         source="username"

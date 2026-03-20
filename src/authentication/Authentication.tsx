@@ -2,6 +2,7 @@ import {
   DatagridConfigurable,
   DateField,
   DateTimeInput,
+  DeleteButton,
   ExportButton,
   FilterButton,
   FunctionField,
@@ -22,6 +23,7 @@ import {
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
+import { Typography } from "@mui/material";
 
 const AuthenticationFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -68,6 +70,12 @@ const AuthenticationListActions = () => (
   </TopToolbar>
 );
 
+const AuthenticationShowActions = () => (
+  <TopToolbar>
+    <DeleteButton mutationMode="pessimistic"/>
+  </TopToolbar>
+);
+
 export const AuthenticationList = () => (
   <List
     filters={AuthenticationFilters}
@@ -92,7 +100,7 @@ export const AuthenticationList = () => (
 );
 
 export const AuthenticationShow = () => (
-  <Show actions={false}>
+  <Show actions={<AuthenticationShowActions />}>
     <SimpleShowLayout direction={"row"}>
       <FunctionField
         source="username"
@@ -120,6 +128,22 @@ export const AuthenticationShow = () => (
     <SimpleShowLayout direction={"row"}>
       <ReferenceField reference="policy" source="matched_policy_id" />
       <TextField source="error_message" />
+    </SimpleShowLayout>
+    <SimpleShowLayout>
+      <FunctionField
+        label="Request"
+        render={(record) => (
+          <pre>{JSON.stringify(record.request_json, null, 2)}</pre>
+        )}
+      />
+    </SimpleShowLayout>
+    <SimpleShowLayout>
+      <FunctionField
+        label="Reply"
+        render={(record) => (
+          <pre>{JSON.stringify(record.reply_json, null, 2)}</pre>
+        )}
+      />
     </SimpleShowLayout>
   </Show>
 );
