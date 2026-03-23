@@ -32,6 +32,7 @@ import {
   Button,
   LinkBase,
   CanAccess,
+  BulkDeleteButton,
 } from "react-admin";
 import {
   formatOctets,
@@ -43,6 +44,7 @@ import {
 } from "../shared/Shared";
 
 import UploadIcon from "@mui/icons-material/Upload";
+import { BulkUpdateFormButton } from "../shared/BulkUpdateFormButton";
 
 const EndpointFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -91,6 +93,25 @@ const EndpointListActions = () => (
   </TopToolbar>
 );
 
+const EndpointBulkUpdateButton = () => (
+  <BulkUpdateFormButton>
+    <ReferenceInput
+      reference="endpoint_group"
+      source="group_id"
+      label="Group"
+    />
+  </BulkUpdateFormButton>
+);
+
+export const EndpointListBulkActions = () => (
+  <>
+    <CanAccess action="edit" resource="endpoint">
+      <EndpointBulkUpdateButton />
+    </CanAccess>
+    <BulkDeleteButton mutationMode="pessimistic" />
+  </>
+);
+
 export const EndpointList = () => (
   <List
     filters={EndpointFilters}
@@ -98,7 +119,7 @@ export const EndpointList = () => (
     pagination={<NACPagination />}
     perPage={NACDefaultPagination}
   >
-    <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
+    <DatagridConfigurable bulkActionButtons={<EndpointListBulkActions />}>
       <TextField source="username" />
       <TextField source="calling_station_id" />
       <TextField source="description" />
@@ -280,8 +301,6 @@ const EndpointShowRelations = () => {
     </>
   );
 };
-
-
 
 const EndpointShowTitle = () => {
   const record = useRecordContext();
