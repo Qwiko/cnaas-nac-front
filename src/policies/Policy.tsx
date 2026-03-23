@@ -47,8 +47,47 @@ import {
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
-// eslint-disable-next-line react/jsx-key
-const PolicyFilters = [<TextInput label="Search" source="q" alwaysOn />];
+
+const PolicyFilters = [
+  // eslint-disable-next-line react/jsx-key
+  <TextInput label="Search" source="q" alwaysOn />,
+  // eslint-disable-next-line react/jsx-key
+  <SelectInput
+    source="port_type"
+    resettable
+    choices={[
+      { id: "Ethernet", name: "Wired only" },
+      { id: "Wireless-802.11", name: "Wireless only" },
+    ]}
+  />,
+  // eslint-disable-next-line react/jsx-key
+  <SelectInput
+    source="client_type"
+    resettable
+    choices={[
+      { id: "MAB", name: "MAB only" },
+      { id: "EAP", name: "EAP only" },
+    ]}
+  />,
+  // eslint-disable-next-line react/jsx-key
+  <SelectInput
+    source="match_logic"
+    isRequired
+    choices={[
+      { id: "AND", name: "AND" },
+      { id: "OR", name: "OR" },
+    ]}
+  />,
+  // eslint-disable-next-line react/jsx-key
+  <SelectInput
+    source="port_locking"
+    resettable
+    choices={[
+      { id: "switch", name: "Switch" },
+      { id: "switch_port", name: "Switch and port" },
+    ]}
+  />,
+];
 
 const PolicyListActions = () => (
   <TopToolbar>
@@ -70,7 +109,29 @@ export const PolicyList = () => (
       <TextField source="name" />
       <TextField source="description" />
       <NumberField source="priority" />
-      <TextField source="match_logic" />
+      <SelectField
+        source="port_type"
+        emptyText="Any"
+        choices={[
+          { id: "Ethernet", name: "Wired only" },
+          { id: "Wireless-802.11", name: "Wireless only" },
+        ]}
+      />
+      <SelectField
+        source="client_type"
+        emptyText="Any"
+        choices={[
+          { id: "MAB", name: "MAB only" },
+          { id: "EAP", name: "EAP only" },
+        ]}
+      />
+      <SelectField
+        source="match_logic"
+        choices={[
+          { id: "AND", name: "AND" },
+          { id: "OR", name: "OR" },
+        ]}
+      />
       <ColoredBooleanField source="enabled" />
       <DateField source="created_at" showTime={true} />
       <DateField source="updated_at" showTime={true} />
