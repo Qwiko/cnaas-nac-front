@@ -14,8 +14,8 @@ import {
   useListContext,
   useNotify,
   useRefresh,
-  useUpdateMany,
   useResourceContext,
+  useDataProvider,
 } from "react-admin";
 
 import { useFormContext } from "react-hook-form";
@@ -24,12 +24,14 @@ export const BulkUpdateFormButton = (props) => {
   const { selectedIds, onUnselectItems } = useListContext();
   const resource = useResourceContext();
 
+  const { data } = useListContext();
+
   const [open, setOpen] = useState(false);
 
   const notify = useNotify();
   const refresh = useRefresh();
 
-  const [updateMany] = useUpdateMany();
+  const dataprovider = useDataProvider();
 
   const handleOpen = (e) => {
     e.stopPropagation();
@@ -48,10 +50,19 @@ export const BulkUpdateFormButton = (props) => {
         return;
       }
 
-      await updateMany(resource, {
-        ids: selectedIds,
-        data: values,
+      const promises = selectedIds.map((id) => {
+        const original = data.find((record) => record.id === id) || {};
+
+        return dataprovider.update(resource, {
+          id,
+          data: {
+            ...original,
+            ...values,
+          },
+        });
       });
+
+      await Promise.all(promises);
 
       notify("Bulk update successful", { type: "success" });
 
