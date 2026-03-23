@@ -53,7 +53,7 @@ const AccountingListActions = () => (
 
 const AccountingShowActions = () => (
   <TopToolbar>
-    <DeleteButton mutationMode="pessimistic"/>
+    <DeleteButton mutationMode="pessimistic" />
   </TopToolbar>
 );
 
@@ -84,7 +84,7 @@ export const AccountingList = () => (
 );
 
 export const AccountingShow = () => (
-  <Show actions={AccountingShowActions}>
+  <Show actions={<AccountingShowActions />}>
     <SimpleShowLayout direction={"row"}>
       <FunctionField
         source="username"
