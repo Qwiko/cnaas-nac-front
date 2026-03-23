@@ -1,0 +1,7 @@
+services:
+  cnaas-nac-front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
