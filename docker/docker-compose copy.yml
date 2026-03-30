@@ -1,0 +1,7 @@
+services:
+  front:
+    build:
+      context: ..
+      dockerfile: docker/front/Dockerfile
+    ports:
+      - "80:80"
