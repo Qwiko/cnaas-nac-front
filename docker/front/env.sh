@@ -17,6 +17,6 @@ var REDIRECT_LOGIN_URL = "${REDIRECT_LOGIN_URL:-}";
 EOF
 
 # Add config.js to index.html
-sed -i '/<script type=module src=\/cnaas.*/a\
-<script src="/config.js"></script>
+sed -i '/<script type="module".*/a\
+\t<script src="/config.js"></script>
 ' /usr/share/nginx/html/index.html
