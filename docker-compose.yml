@@ -1,5 +1,5 @@
 services:
-  cnaas-nac-front:
+  front:
     build:
       context: .
       dockerfile: Dockerfile
