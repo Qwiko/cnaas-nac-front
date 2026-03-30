@@ -12,7 +12,7 @@ done
 
 # Create config.js dynamically using a here-doc
 cat > "/usr/share/nginx/html/config.js" <<EOF
-var API_URL = "${CNAAS_FRONT_URL:-${API_URL:-}}";
+var NAC_API_URL = "${NAC_FRONT_URL:-${NAC_API_URL:-}}";
 var REDIRECT_LOGIN_URL = "${REDIRECT_LOGIN_URL:-}";
 EOF
 

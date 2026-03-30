@@ -8,7 +8,7 @@ export const createHeader = () => {
   return new Headers({ Authorization: `Bearer ${access_token}` });
 };
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_NAC_API_URL;
 
 export const refreshAuth = async () => {
   const accessToken = localStorage.getItem("access_token");

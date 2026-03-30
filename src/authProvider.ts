@@ -1,7 +1,7 @@
 import { AuthProvider } from "react-admin";
 import { createHeader, refreshAuth } from "./refreshAuth";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_NAC_API_URL;
 
 const authProvider: AuthProvider = {
   login: () => {
