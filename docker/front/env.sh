@@ -1,15 +1,5 @@
 #!/bin/sh
 
-REQUIRED_VARS="CNAAS_API_URL \
-REDIRECT_LOGIN_URL"
-
-for v in $REQUIRED_VARS; do
-    if [ -z "$(printenv "$v")" ]; then
-        echo "ERROR: Required environment variable $v is not set." >&2
-        exit 1
-    fi
-done
-
 # Create config.js dynamically using a here-doc
 cat > "/usr/share/nginx/html/config.js" <<EOF
 var NAC_API_URL = "${NAC_FRONT_URL:-${NAC_API_URL:-}}";
