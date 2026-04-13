@@ -184,6 +184,10 @@ const AccountingExpand = () => {
         />
       </SimpleShowLayout>
       <SimpleShowLayout record={record} direction={"row"}>
+        <TextField source="acct_terminate_cause" label="Termination Cause" />
+        <TextField source="service_type" />
+      </SimpleShowLayout>
+      <SimpleShowLayout record={record} direction={"row"}>
         <FunctionField
           label="Session time"
           emptyText="N/A"
