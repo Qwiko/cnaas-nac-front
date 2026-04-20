@@ -1,13 +1,18 @@
 import { stringify } from "query-string";
-import {
-  fetchUtils,
-  DataProvider,
-  addRefreshAuthToDataProvider,
-} from "ra-core";
-import { createHeader, refreshAuth } from "./refreshAuth";
+import { fetchUtils, DataProvider } from "ra-core";
 
 const apiUrl = import.meta.env.VITE_NAC_API_URL;
 const httpClient = fetchUtils.fetchJson;
+
+export const createHeader = () => {
+  const access_token = localStorage.getItem("access_token");
+
+  if (!access_token) {
+    return new Headers();
+  }
+
+  return new Headers({ Authorization: `Bearer ${access_token}` });
+};
 
 const mapId = (
   data: object[] | object,
@@ -180,4 +185,4 @@ const dataProvider: DataProvider = {
   },
 };
 
-export default addRefreshAuthToDataProvider(dataProvider, refreshAuth);
+export default dataProvider;

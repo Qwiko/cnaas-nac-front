@@ -1,7 +1,19 @@
 import { AuthProvider } from "react-admin";
-import { createHeader, refreshAuth } from "./refreshAuth";
+import { createHeader } from "./dataProvider";
+import { permission } from "process";
 
 const apiUrl = import.meta.env.VITE_NAC_API_URL;
+
+const fetchPermissions = async () => {
+  // Fetching permssions
+  const response = await fetch(`${apiUrl}/auth/permissions`, {
+    method: "GET",
+    headers: createHeader(),
+  });
+  const permission_data = await response.json();
+  localStorage.setItem("permissions", JSON.stringify(permission_data));
+  return;
+};
 
 const authProvider: AuthProvider = {
   login: () => {
@@ -35,21 +47,23 @@ const authProvider: AuthProvider = {
     }
     return Promise.resolve();
   },
-  checkAuth: () => {
+  checkAuth: async () => {
     const accessToken = localStorage.getItem("access_token");
-
+    const permissionsData = localStorage.getItem("permissions");
     if (!accessToken) {
       return Promise.reject();
     }
 
-    // This is specific to the Google authentication implementation
-    const jwt = JSON.parse(atob(accessToken.split(".")[1]));
-    const now = new Date();
-
-    if (now.getTime() > jwt.exp * 1000) {
-      // Try to refresh
-      return refreshAuth();
+    if (!permissionsData) {
+      // Refetch permissions because they are not found.
+      await fetchPermissions();
     }
+
+    // TODO?
+    // This is specific to the Google authentication implementation
+    // const jwt = JSON.parse(atob(accessToken.split(".")[1]));
+    // const now = new Date();
+
     return Promise.resolve();
   },
   async handleCallback() {
@@ -61,12 +75,7 @@ const authProvider: AuthProvider = {
       localStorage.setItem("access_token", accessToken);
 
       // Fetching permssions
-      const response = await fetch(`${apiUrl}/auth/permissions`, {
-        method: "GET",
-        headers: createHeader(),
-      });
-      const permission_data = await response.json();
-      localStorage.setItem("permissions", JSON.stringify(permission_data));
+      await fetchPermissions();
 
       // Redirect to start
       window.location.replace(window.location.origin);
@@ -109,8 +118,8 @@ const authProvider: AuthProvider = {
     })
       .then((response) => response.json())
       .then((json_data) => ({
-        id: json_data.name,
-        fullName: json_data.name,
+        id: json_data.username,
+        fullName: json_data.username,
       }))
       .catch(() => {
         // Redirects to /login automatically in react-admin
