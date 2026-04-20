@@ -120,6 +120,8 @@ const authProvider: AuthProvider = {
       .then((json_data) => ({
         id: json_data.username,
         fullName: json_data.username,
+        isAdmin: json_data.is_admin,
+        rbacGroups: json_data.rbac_groups,
       }))
       .catch(() => {
         // Redirects to /login automatically in react-admin
