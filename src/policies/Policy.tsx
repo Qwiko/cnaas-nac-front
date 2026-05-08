@@ -190,13 +190,11 @@ const AddVlanRepliesButton = () => {
           const newReplies = replies.concat([
             {
               attribute: "Tunnel-Medium-Type",
-              operator: ":=",
               value: "IEEE-802",
             },
-            { attribute: "Tunnel-Type", operator: ":=", value: "VLAN" },
+            { attribute: "Tunnel-Type", value: "VLAN" },
             {
               attribute: "Tunnel-Private-Group-Id",
-              operator: ":=",
               value: "Insert vlan id here",
             },
           ]);
@@ -293,15 +291,6 @@ export const PolicyShow = () => (
         <DataTable bulkActionButtons={false}>
           <DataTable.Col source="attribute">
             <TextField source="attribute" />
-          </DataTable.Col>
-          <DataTable.Col source="operator">
-            <SelectField
-              source="operator"
-              choices={[
-                { id: "=", name: "Equals" },
-                { id: ":=", name: "Set equals" },
-              ]}
-            />
           </DataTable.Col>
           <DataTable.Col source="value">
             <PolicyShowConditionValue />
@@ -476,16 +465,6 @@ const PolicyCreateEdit = () => (
     <ArrayInput source="replies" label="">
       <SimpleFormIterator inline={true}>
         <TextInput source="attribute" isRequired />
-
-        <SelectInput
-          source="operator"
-          choices={[
-            { id: "=", name: "Equals" },
-            { id: ":=", name: "Set equals" },
-          ]}
-          isRequired
-        />
-
         <TextInput source="value" isRequired />
       </SimpleFormIterator>
     </ArrayInput>
