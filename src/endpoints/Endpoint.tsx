@@ -220,88 +220,94 @@ const EndpointShowRelations = () => {
 
   return (
     <>
-      <SimpleShowLayout>
-        <ReferenceManyField
-          label="Ports"
-          reference="nas_port"
-          target="endpoint_id"
-          sort={{ field: "updated_at", order: "DESC" }}
-          empty="No ports found"
-        >
-          <DataTable bulkActionButtons={<ListBulkActions />}>
-            <DataTable.Col source="nas_identifier" />
-            <DataTable.Col source="nas_port_id" />
-            <DataTable.Col source="created_at" label="First seen">
-              <DateField source="created_at" showTime={true} />
-            </DataTable.Col>
-            <DataTable.Col source="updated_at" label="Last seen">
-              <DateField source="updated_at" showTime={true} />
-            </DataTable.Col>
-          </DataTable>
-        </ReferenceManyField>
-      </SimpleShowLayout>
-      <SimpleShowLayout>
-        <ReferenceManyField
-          label="Accounting"
-          reference="accounting"
-          target="endpoint_id"
-          sort={{ field: "acct_start_time", order: "DESC" }}
-          empty="No accounting logs found"
-        >
-          <DataTable bulkActionButtons={false} expand={<AccountingExpand />}>
-            <DataTable.Col source="nas_identifier" />
-            <DataTable.Col source="nas_port_id" />
+      <CanAccess action="list" resource="nas_port">
+        <SimpleShowLayout>
+          <ReferenceManyField
+            label="Ports"
+            reference="nas_port"
+            target="endpoint_id"
+            sort={{ field: "updated_at", order: "DESC" }}
+            empty="No ports found"
+          >
+            <DataTable bulkActionButtons={<ListBulkActions />}>
+              <DataTable.Col source="nas_identifier" />
+              <DataTable.Col source="nas_port_id" />
+              <DataTable.Col source="created_at" label="First seen">
+                <DateField source="created_at" showTime={true} />
+              </DataTable.Col>
+              <DataTable.Col source="updated_at" label="Last seen">
+                <DateField source="updated_at" showTime={true} />
+              </DataTable.Col>
+            </DataTable>
+          </ReferenceManyField>
+        </SimpleShowLayout>
+      </CanAccess>
+      <CanAccess action="list" resource="accounting">
+        <SimpleShowLayout>
+          <ReferenceManyField
+            label="Accounting"
+            reference="accounting"
+            target="endpoint_id"
+            sort={{ field: "acct_start_time", order: "DESC" }}
+            empty="No accounting logs found"
+          >
+            <DataTable bulkActionButtons={false} expand={<AccountingExpand />}>
+              <DataTable.Col source="nas_identifier" />
+              <DataTable.Col source="nas_port_id" />
 
-            <DataTable.Col source="acct_start_time" label="Start time">
-              <DateField source="acct_start_time" showTime={true} />
-            </DataTable.Col>
-            <DataTable.Col source="acct_stop_time" label="Stop time">
-              <DateField
-                source="acct_stop_time"
-                showTime={true}
-                emptyText="N/A"
-              />
-            </DataTable.Col>
-            <DataTable.Col source="acct_session_time" label="Session time">
-              <FunctionField
-                render={(record) => formatSeconds(record?.acct_session_time)}
-              />
-            </DataTable.Col>
-            <DataTable.Col source="acct_input_octets" label="Input data">
-              <FunctionField
-                render={(record) => formatOctets(record?.acct_input_octets)}
-              />
-            </DataTable.Col>
-            <DataTable.Col source="acct_output_octets" label="Output data">
-              <FunctionField
-                render={(record) => formatOctets(record?.acct_output_octets)}
-              />
-            </DataTable.Col>
-          </DataTable>
-        </ReferenceManyField>
-      </SimpleShowLayout>
-      <SimpleShowLayout>
-        <ReferenceManyField
-          label="Authentications"
-          reference="authentication"
-          target="endpoint_id"
-          sort={{ field: "auth_date", order: "DESC" }}
-          empty="No authentication logs found"
-        >
-          <DataTable bulkActionButtons={false}>
-            <DataTable.Col source="nas_identifier" />
-            <DataTable.Col source="nas_port_id" label="Port ID" />
-            <DataTable.Col source="auth_date">
-              <DateField source="auth_date" showTime={true} />
-            </DataTable.Col>
-            <DataTable.Col source="reply" />
-            <DataTable.Col source="matched_policy_id">
-              <ReferenceField reference="policy" source="matched_policy_id" />
-            </DataTable.Col>
-            <DataTable.Col source="error_message" />
-          </DataTable>
-        </ReferenceManyField>
-      </SimpleShowLayout>
+              <DataTable.Col source="acct_start_time" label="Start time">
+                <DateField source="acct_start_time" showTime={true} />
+              </DataTable.Col>
+              <DataTable.Col source="acct_stop_time" label="Stop time">
+                <DateField
+                  source="acct_stop_time"
+                  showTime={true}
+                  emptyText="N/A"
+                />
+              </DataTable.Col>
+              <DataTable.Col source="acct_session_time" label="Session time">
+                <FunctionField
+                  render={(record) => formatSeconds(record?.acct_session_time)}
+                />
+              </DataTable.Col>
+              <DataTable.Col source="acct_input_octets" label="Input data">
+                <FunctionField
+                  render={(record) => formatOctets(record?.acct_input_octets)}
+                />
+              </DataTable.Col>
+              <DataTable.Col source="acct_output_octets" label="Output data">
+                <FunctionField
+                  render={(record) => formatOctets(record?.acct_output_octets)}
+                />
+              </DataTable.Col>
+            </DataTable>
+          </ReferenceManyField>
+        </SimpleShowLayout>
+      </CanAccess>
+      <CanAccess action="list" resource="authentication">
+        <SimpleShowLayout>
+          <ReferenceManyField
+            label="Authentications"
+            reference="authentication"
+            target="endpoint_id"
+            sort={{ field: "auth_date", order: "DESC" }}
+            empty="No authentication logs found"
+          >
+            <DataTable bulkActionButtons={false}>
+              <DataTable.Col source="nas_identifier" />
+              <DataTable.Col source="nas_port_id" label="Port ID" />
+              <DataTable.Col source="auth_date">
+                <DateField source="auth_date" showTime={true} />
+              </DataTable.Col>
+              <DataTable.Col source="reply" />
+              <DataTable.Col source="matched_policy_id">
+                <ReferenceField reference="policy" source="matched_policy_id" />
+              </DataTable.Col>
+              <DataTable.Col source="error_message" />
+            </DataTable>
+          </ReferenceManyField>
+        </SimpleShowLayout>
+      </CanAccess>
     </>
   );
 };
