@@ -31,6 +31,8 @@ const AccountingFilters = [
   // eslint-disable-next-line react/jsx-key
   <TextInput label="Calling Station" source="calling_station_id__ilike" />,
   // eslint-disable-next-line react/jsx-key
+  <TextInput label="Realm" source="realm__ilike" />,
+  // eslint-disable-next-line react/jsx-key
   <TextInput label="NAS Identifier" source="nas_identifier__ilike" />,
   // eslint-disable-next-line react/jsx-key
   <TextInput label="NAS Port" source="nas_port_id__ilike" />,
@@ -68,7 +70,7 @@ export const AccountingList = () => (
     <DatagridConfigurable bulkActionButtons={<ListBulkActions />}>
       <TextField source="username" />
       <TextField source="calling_station_id" />
-
+      <TextField source="realm" />
       <TextField source="nas_identifier" />
       <TextField source="nas_port_id" />
 
@@ -100,6 +102,7 @@ export const AccountingShow = () => (
         }
       />
       <TextField source="calling_station_id" />
+      <TextField source="realm" />
     </SimpleShowLayout>
     <SimpleShowLayout direction={"row"}>
       <TextField source="nas_identifier" />

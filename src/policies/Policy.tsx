@@ -240,7 +240,7 @@ export const PolicyShow = () => (
 
       <ColoredBooleanField source="enabled" />
 
-      <ArrayField source="conditions">
+      <ArrayField source="conditions" emptyText="Testing">
         <DataTable bulkActionButtons={false}>
           <DataTable.Col source="attribute">
             <SelectField
@@ -252,6 +252,7 @@ export const PolicyShow = () => (
                 { id: "calling_station_id", name: "Calling Station ID" },
                 { id: "called_station_id", name: "Called Station ID" },
                 { id: "nas_ip_address", name: "NAS IP Address" },
+                { id: "realm", name: "Realm" },
                 { id: "group_id", name: "Endpoint group" },
                 { id: "ldap_groups", name: "LDAP group" },
               ]}
@@ -379,6 +380,7 @@ const PolicyCreateEdit = () => (
             { id: "calling_station_id", name: "Calling Station ID" },
             { id: "called_station_id", name: "Called Station ID" },
             { id: "nas_ip_address", name: "NAS IP Address" },
+            { id: "realm", name: "Realm" },
             { id: "group_id", name: "Endpoint group" },
             { id: "ldap_groups", name: "LDAP group" },
           ]}
