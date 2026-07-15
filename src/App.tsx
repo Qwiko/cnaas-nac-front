@@ -9,12 +9,13 @@ import endpoint_groups from "./endpoint_groups";
 import policies from "./policies";
 import accounting_logs from "./accounting";
 import authentication_logs from "./authentication";
+
 import vlans from "./vlans";
 import rbacs from "./rbacs";
 import radius_clients from "./radius_clients";
 
 import { Dashboard } from "./Dashboard";
-
+import { DebugCreate, DebugList } from "./debug/Debug";
 import { NACLogin } from "./Login";
 import { darkTheme, theme } from "./theme";
 import { Route } from "react-router";
@@ -41,6 +42,8 @@ export const App = () => (
     <Resource name="rbac" {...rbacs} />
     <Resource name="radius_client" {...radius_clients} />
     <CustomRoutes>
+      <Route path="/debug" element={<DebugList />} />
+      <Route path="/debug/create" element={<DebugCreate />} />
       <Route path="/endpoint_import" element={<EndpointImport />} />
     </CustomRoutes>
   </Admin>

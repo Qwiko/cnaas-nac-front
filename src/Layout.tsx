@@ -10,6 +10,7 @@ import {
   useGetIdentity,
 } from "react-admin";
 import CheckIcon from "@mui/icons-material/Check";
+import { NACMenu } from "./Menu";
 
 const NACUserInfo = () => {
   const { data, isPending, error } = useGetIdentity();
@@ -63,7 +64,7 @@ const NACAppBar = () => (
 );
 
 export const Layout = ({ children }: { children: ReactNode }) => (
-  <RALayout appBar={NACAppBar}>
+  <RALayout appBar={NACAppBar} menu={NACMenu}>
     {children}
     <CheckForApplicationUpdate />
   </RALayout>
