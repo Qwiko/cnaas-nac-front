@@ -276,7 +276,17 @@ export const DebugList = () => {
         next.add(node_name);
         return next;
       });
-      setDebugLogs((prev) => [...prev, log]);
+      setDebugLogs((prev) => {
+        const prev_copy = { ...prev };
+        if (!Object.keys(prev_copy).includes(node_name)) {
+          prev_copy[node_name] = [];
+        }
+
+        const node_logs = prev_copy[node_name];
+
+        prev_copy[node_name] = [...node_logs, log].slice(-1000);
+        return prev_copy;
+      });
     });
 
     eventSource.onopen = () => {
@@ -302,12 +312,10 @@ export const DebugList = () => {
   }, [notify, retryCount]);
 
   const displayedLogs = useMemo(() => {
-    return debugLogs
-      .filter(
-        (logObj) =>
-          logObj.node_name === selectedNode && logObj.log_line.includes(filter),
-      )
-      .slice(-1000);
+    if (!selectedNode || !debugLogs) return [];
+    return debugLogs[selectedNode].filter((logObj) =>
+      logObj.log_line.includes(filter),
+    );
   }, [debugLogs, filter, selectedNode]);
 
   useEffect(() => {
@@ -406,7 +414,8 @@ export const DebugList = () => {
           mt: 2,
           display: "flex",
           flexDirection: "column",
-          height: "calc(100vh - 32vh)",
+          height: "calc(100vh - 423px)",
+          // maxHeight: "80%",
           padding: "8px",
         }}
       >
