@@ -188,7 +188,7 @@ const ClearDebugLogsButton = ({ setDebugLogs }) => {
     try {
       await dataProvider.delete("debug/logs", { id: "" });
       notify("Debug logs cleared");
-      setDebugLogs([]);
+      setDebugLogs({});
     } catch (error) {
       notify("Debug log clear failed", { type: "error" });
     }
@@ -312,7 +312,12 @@ export const DebugList = () => {
   }, [notify, retryCount]);
 
   const displayedLogs = useMemo(() => {
-    if (!selectedNode || !debugLogs) return [];
+    if (
+      !selectedNode ||
+      !debugLogs ||
+      !Object.keys(debugLogs).includes(selectedNode)
+    )
+      return [];
     return debugLogs[selectedNode].filter((logObj) =>
       logObj.log_line.includes(filter),
     );
