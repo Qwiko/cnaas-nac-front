@@ -4,7 +4,7 @@ import { fetchUtils, DataProvider } from "ra-core";
 const apiUrl = import.meta.env.VITE_NAC_API_URL;
 const httpClient = fetchUtils.fetchJson;
 
-export const createHeader = () => {
+export const createHeader = (): Headers => {
   const access_token = localStorage.getItem("access_token");
 
   if (!access_token) {

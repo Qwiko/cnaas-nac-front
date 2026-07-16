@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   Checkbox,
+  Chip,
   CircularProgress,
   FormControl,
   FormControlLabel,
@@ -13,6 +14,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -41,6 +43,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { EventSource } from "eventsource";
 import { createHeader } from "../dataProvider";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import SyncIcon from "@mui/icons-material/Sync";
+import ErrorIcon from "@mui/icons-material/Error";
 
 const LoadingBox = () => (
   <Box display="flex" justifyContent="center" mt={4}>
@@ -79,6 +84,48 @@ const MemoizedLogLine = memo(function MemoizedLogLine({
     </SyntaxHighlighter>
   );
 });
+
+type ConnectionStatus = "connecting" | "connected" | "disconnected";
+
+function ConnectionStatusChip({ status }: { status: ConnectionStatus }) {
+  switch (status) {
+    case "connected":
+      return (
+        <Tooltip title="Debug logs streaming is connected">
+          <Chip
+            color="success"
+            icon={<CheckCircleIcon />}
+            label="Connected"
+            size="small"
+          />
+        </Tooltip>
+      );
+
+    case "connecting":
+      return (
+        <Tooltip title="Debug logs streaming is connecting">
+          <Chip
+            color="warning"
+            icon={<SyncIcon className="spin" />}
+            label="Connecting"
+            size="small"
+          />
+        </Tooltip>
+      );
+
+    case "disconnected":
+      return (
+        <Tooltip title="Debug logs streaming is disconnected">
+          <Chip
+            color="error"
+            icon={<ErrorIcon />}
+            label="Disconnected"
+            size="small"
+          />
+        </Tooltip>
+      );
+  }
+}
 
 const StartDebugButton = () => {
   const redirect = useRedirect();
@@ -174,9 +221,10 @@ export const DebugList = () => {
 
   const dataProvider = useDataProvider();
   const notify = useNotify();
-  const refresh = useRefresh();
 
+  const [retryCount, setRetryCount] = useState(0);
   const [activeDebugging, setActiveDebugging] = useState(null);
+  const [status, setStatus] = useState("connecting");
   const [debugLogs, setDebugLogs] = useState([]);
   const [selectedNode, setSelectedNode] = useState("");
   const [availableNodes, setAvailableNodes] = useState(new Set());
@@ -200,6 +248,8 @@ export const DebugList = () => {
   }, [dataProvider]);
 
   useEffect(() => {
+    let reconnectTimeout;
+
     // Setup EventSource SSE debug log listener
     const eventSource = new EventSource(
       "http://localhost:8000/api/v2/debug/logs",
@@ -207,7 +257,10 @@ export const DebugList = () => {
         fetch: (input, init) =>
           fetch(input, {
             ...init,
-            headers: createHeader(),
+            headers: {
+              ...init.headers,
+              Authorization: createHeader().get("Authorization"),
+            },
           }),
       },
     );
@@ -225,17 +278,28 @@ export const DebugList = () => {
       });
       setDebugLogs((prev) => [...prev, log]);
     });
+
+    eventSource.onopen = () => {
+      setStatus("connected");
+    };
+
     eventSource.onerror = (err) => {
       console.error("SSE Error:", err);
+      setStatus("disconnected");
       eventSource.close();
-      notify("SSE stream error, refreshing");
-      refresh();
+
+      reconnectTimeout = setTimeout(() => {
+        setRetryCount((prev) => prev + 1);
+      }, 3000); // 3-second delay
     };
 
     return () => {
       eventSource.close();
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
     };
-  }, []);
+  }, [notify, retryCount]);
 
   const displayedLogs = useMemo(() => {
     return debugLogs
@@ -305,21 +369,34 @@ export const DebugList = () => {
               }
               label="Autoscroll logs"
             />
-            <FormHelperText>
-              Displaying only the latest 1000 logs
-            </FormHelperText>
-            <FormHelperText>
-              {activeDebugging === null ? (
-                <>No active debugging</>
-              ) : (
-                <>
-                  Current active conditions:{" "}
-                  {JSON.stringify(activeDebugging, (key, value) => {
-                    if (key !== "id" && value !== null) return value;
-                  })}
-                </>
-              )}
-            </FormHelperText>
+            <Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Box>
+                  <FormHelperText>
+                    Displaying only the latest 1000 lines
+                  </FormHelperText>
+                  <FormHelperText>
+                    {activeDebugging === null ? (
+                      <>No active debugging</>
+                    ) : (
+                      <>
+                        Current active conditions:{" "}
+                        {JSON.stringify(activeDebugging, (key, value) => {
+                          if (key !== "id" && value !== null) return value;
+                        })}
+                      </>
+                    )}
+                  </FormHelperText>
+                </Box>
+                <ConnectionStatusChip status={status} />
+              </Box>
+            </Box>
           </FormGroup>
         </CardContent>
       </Card>
