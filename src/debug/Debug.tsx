@@ -2,14 +2,20 @@ import {
   Box,
   Card,
   CardContent,
+  Checkbox,
   CircularProgress,
   FormControl,
+  FormControlLabel,
+  FormGroup,
+  FormHelperText,
+  Input,
   InputLabel,
   MenuItem,
   Select,
+  TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   Confirm,
@@ -23,8 +29,8 @@ import {
   useRefresh,
   useRequireAccess,
   useTheme,
+  Title,
 } from "react-admin";
-import { Title, useGetList } from "react-admin";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   vscDarkPlus,
@@ -33,7 +39,8 @@ import {
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { redirect } from "react-router";
+import { EventSource } from "eventsource";
+import { createHeader } from "../dataProvider";
 
 const LoadingBox = () => (
   <Box display="flex" justifyContent="center" mt={4}>
@@ -41,7 +48,39 @@ const LoadingBox = () => (
   </Box>
 );
 
-export const StartDebugButton = () => {
+interface MemoizedLogLineProps {
+  line: string;
+}
+
+const MemoizedLogLine = memo(function MemoizedLogLine({
+  line,
+}: MemoizedLogLineProps) {
+  const [theme] = useTheme();
+  return (
+    <SyntaxHighlighter
+      language="log"
+      style={theme == "dark" ? vscDarkPlus : vs}
+      // showLineNumbers
+      wrapLines
+      wrapLongLines
+      lineProps={{
+        style: { wordBreak: "break-all", whiteSpace: "pre-wrap" },
+      }}
+      customStyle={{
+        margin: 0,
+        padding: "0px 0px",
+        border: 0,
+        fontSize: "13px",
+        background: "transparent",
+      }}
+      PreTag="div"
+    >
+      {line}
+    </SyntaxHighlighter>
+  );
+});
+
+const StartDebugButton = () => {
   const redirect = useRedirect();
 
   return (
@@ -53,10 +92,9 @@ export const StartDebugButton = () => {
   );
 };
 
-export const StopDebugButton = () => {
+const StopDebugButton = ({ setActiveDebugging }) => {
   const dataProvider = useDataProvider();
   const notify = useNotify();
-  const refresh = useRefresh();
 
   const [open, setOpen] = useState(false);
 
@@ -65,8 +103,8 @@ export const StopDebugButton = () => {
 
     try {
       await dataProvider.delete("debug", { id: "" });
+      setActiveDebugging(null);
       notify("Debug stopped");
-      refresh();
     } catch (error) {
       notify("Debug stop failed", { type: "error" });
     }
@@ -91,10 +129,9 @@ export const StopDebugButton = () => {
   );
 };
 
-export const ClearDebugLogsButton = () => {
+const ClearDebugLogsButton = ({ setDebugLogs }) => {
   const dataProvider = useDataProvider();
   const notify = useNotify();
-  const refresh = useRefresh();
 
   const [open, setOpen] = useState(false);
 
@@ -104,8 +141,7 @@ export const ClearDebugLogsButton = () => {
     try {
       await dataProvider.delete("debug/logs", { id: "" });
       notify("Debug logs cleared");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      refresh();
+      setDebugLogs([]);
     } catch (error) {
       notify("Debug log clear failed", { type: "error" });
     }
@@ -136,117 +172,186 @@ export const DebugList = () => {
     resource: "debug",
   });
 
-  const [theme] = useTheme();
+  const dataProvider = useDataProvider();
+  const notify = useNotify();
+  const refresh = useRefresh();
 
+  const [activeDebugging, setActiveDebugging] = useState(null);
+  const [debugLogs, setDebugLogs] = useState([]);
   const [selectedNode, setSelectedNode] = useState("");
-  const [refreshInterval, setRefreshInterval] = useState(30000);
+  const [availableNodes, setAvailableNodes] = useState(new Set());
+  const [filter, setFilter] = useState("");
+  const [autoScroll, setAutoScroll] = useState(true);
 
-  const { data: debugLogs, isPending: logsArePending } = useGetList(
-    "debug/logs",
-    {
-      pagination: { page: 1, perPage: 1000 },
-      sort: { field: "id", order: "DESC" },
-    },
-    { refetchInterval: refreshInterval },
-  );
-
-  const groupedLogs = useMemo(() => {
-    if (!debugLogs) return {};
-    return debugLogs.reduce((acc, log) => {
-      const node = log.node_name || "Unknown Node";
-      if (!acc[node]) {
-        acc[node] = [];
-      }
-      acc[node].push(log);
-      return acc;
-    }, {});
-  }, [debugLogs]);
-
-  const availableNodes = Object.keys(groupedLogs);
+  const codeRef = useRef(null);
 
   useEffect(() => {
-    if (availableNodes.length > 0 && !selectedNode) {
-      setSelectedNode(availableNodes[0]);
+    let cancelled = false;
+
+    dataProvider.getOne("debug", { id: "" }).then((data) => {
+      if (!cancelled && data?.data) {
+        setActiveDebugging(data.data);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dataProvider]);
+
+  useEffect(() => {
+    // Setup EventSource SSE debug log listener
+    const eventSource = new EventSource(
+      "http://localhost:8000/api/v2/debug/logs",
+      {
+        fetch: (input, init) =>
+          fetch(input, {
+            ...init,
+            headers: createHeader(),
+          }),
+      },
+    );
+    eventSource.addEventListener("message", (event) => {
+      const log = JSON.parse(event.data);
+      const node_name = log.node_name;
+      setAvailableNodes((prev) => {
+        if (prev.has(node_name)) {
+          return prev;
+        }
+
+        const next = new Set(prev);
+        next.add(node_name);
+        return next;
+      });
+      setDebugLogs((prev) => [...prev, log]);
+    });
+    eventSource.onerror = (err) => {
+      console.error("SSE Error:", err);
+      eventSource.close();
+      notify("SSE stream error, refreshing");
+      refresh();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  const displayedLogs = useMemo(() => {
+    return debugLogs
+      .filter(
+        (logObj) =>
+          logObj.node_name === selectedNode && logObj.log_line.includes(filter),
+      )
+      .slice(-1000);
+  }, [debugLogs, filter, selectedNode]);
+
+  useEffect(() => {
+    if (autoScroll && codeRef.current) {
+      // scrollIntoView jumps the container to this element
+      codeRef.current.scrollTop = codeRef.current.scrollHeight;
     }
+  }, [displayedLogs, autoScroll]);
+
+  useEffect(() => {
+    if (selectedNode || availableNodes.size === 0) {
+      return;
+    }
+
+    setSelectedNode(availableNodes.values().next().value);
   }, [availableNodes, selectedNode]);
 
-  if (authIsPending || logsArePending) return <LoadingBox />;
-
-  const logsToShow = groupedLogs[selectedNode] || [];
-
-  const logString = logsToShow.map((log) => log.log_line).join("\n");
+  if (authIsPending) return <LoadingBox />;
 
   return (
     <>
-      <Title title="Debug Logs" />
+      <Title title="Live debug logs" />
       <TopToolbar>
         <StartDebugButton />
-        <ClearDebugLogsButton />
-        <StopDebugButton />
+        <ClearDebugLogsButton setDebugLogs={setDebugLogs} />
+        <StopDebugButton setActiveDebugging={setActiveDebugging} />
       </TopToolbar>
 
-      {availableNodes.length === 0 ? (
-        <Typography color="textSecondary">No logs found.</Typography>
-      ) : (
-        <>
-          <Card sx={{ mt: 2 }}>
-            <CardContent>
-              <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
-                <InputLabel id="node-select-label">Select node</InputLabel>
-                <Select
-                  labelId="node-select-label"
-                  value={selectedNode}
-                  label="Select node"
-                  onChange={(e) => setSelectedNode(e.target.value)}
-                >
-                  {availableNodes.map((nodeName) => (
-                    <MenuItem key={nodeName} value={nodeName}>
-                      {nodeName} ({groupedLogs[nodeName].length} entries)
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
-                <InputLabel id="refresh-rate-select-label">
-                  Select refresh rate
-                </InputLabel>
-                <Select
-                  labelId="refresh-rate-select-label"
-                  value={refreshInterval}
-                  label="Select refresh rate"
-                  onChange={(e) => setRefreshInterval(e.target.value)}
-                >
-                  {[5000, 10000, 30000, 60000].map((interval) => (
-                    <MenuItem key={interval} value={interval}>
-                      Every {interval / 1000} seconds
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </CardContent>
-          </Card>
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <FormGroup>
+            <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
+              <InputLabel id="node-select-label">Select node</InputLabel>
+              <Select
+                labelId="node-select-label"
+                value={selectedNode}
+                label="Select node"
+                onChange={(e) => setSelectedNode(e.target.value)}
+              >
+                {[...availableNodes].map((nodeName) => (
+                  <MenuItem key={nodeName} value={nodeName}>
+                    {nodeName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              sx={{ mb: 2, mt: 1 }}
+              label="Filter logs"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={autoScroll}
+                  onChange={(event) => setAutoScroll(event.target.checked)}
+                />
+              }
+              label="Autoscroll logs"
+            />
+            <FormHelperText>
+              Displaying only the latest 1000 logs
+            </FormHelperText>
+            <FormHelperText>
+              {activeDebugging === null ? (
+                <>No active debugging</>
+              ) : (
+                <>
+                  Current active conditions:{" "}
+                  {JSON.stringify(activeDebugging, (key, value) => {
+                    if (key !== "id" && value !== null) return value;
+                  })}
+                </>
+              )}
+            </FormHelperText>
+          </FormGroup>
+        </CardContent>
+      </Card>
 
-          <Card sx={{ mt: 2 }}>
-            <SyntaxHighlighter
-              language="log"
-              style={theme == "dark" ? vscDarkPlus : vs}
-              // showLineNumbers
-              wrapLines
-              wrapLongLines
-              lineProps={{
-                style: { wordBreak: "break-all", whiteSpace: "pre-wrap" },
-              }}
-              customStyle={{
-                border: 0,
-                fontSize: "13px",
-                background: "transparent",
-              }}
-            >
-              {logString}
-            </SyntaxHighlighter>
-          </Card>
-        </>
-      )}
+      <Card
+        sx={{
+          mt: 2,
+          display: "flex",
+          flexDirection: "column",
+          height: "calc(100vh - 32vh)",
+          padding: "8px",
+        }}
+      >
+        {displayedLogs.length == 0 ? (
+          <CardContent>
+            <Typography>No Logs</Typography>
+          </CardContent>
+        ) : (
+          <div
+            ref={codeRef}
+            style={{
+              maxHeight: "100%",
+              overflowY: "auto",
+            }}
+          >
+            {displayedLogs.map((logObj) => (
+              // Use a unique ID for the key if available, otherwise index is acceptable for append-only logs
+              <MemoizedLogLine key={logObj.id} line={logObj.log_line} />
+            ))}
+          </div>
+        )}
+      </Card>
     </>
   );
 };
@@ -256,11 +361,8 @@ export const DebugCreate = () => {
   const notify = useNotify();
 
   const onSuccess = () => {
-    notify("Setting up debugging, please wait.");
-
-    new Promise((resolve) => setTimeout(resolve, 1000)).then(() =>
-      redirect("/debug"),
-    );
+    notify("Debugging started");
+    redirect("/debug");
   };
 
   return (
