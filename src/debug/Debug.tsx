@@ -68,7 +68,7 @@ const MemoizedLogLine = memo(function MemoizedLogLine({
 
   return (
     <pre
-      style={{ margin: 0, whiteSpace: "pre-wrap" }}
+      style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -264,15 +264,21 @@ export const DebugList = () => {
         return next;
       });
       setDebugLogs((prev) => {
-        const prev_copy = { ...prev };
-        if (!(node_name in prev_copy)) {
-          prev_copy[node_name] = [];
-        }
+        const currentLogs = prev[node_name] || [];
 
-        const node_logs = prev_copy[node_name];
+        // Calculate where to slice to leave room for the new log
+        // If we have 1000 items, we slice from index 1 (keeping 999).
+        // If we have <1000, we slice from 0 (keeping all).
+        const startIndex =
+          currentLogs.length >= 1000 ? currentLogs.length - 999 : 0;
 
-        prev_copy[node_name] = [...node_logs, log].slice(-1000);
-        return prev_copy;
+        const newLogs = currentLogs.slice(startIndex);
+        newLogs.push(log);
+
+        return {
+          ...prev,
+          [node_name]: newLogs,
+        };
       });
     });
 
