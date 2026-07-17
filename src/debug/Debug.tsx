@@ -9,7 +9,6 @@ import {
   FormControlLabel,
   FormGroup,
   FormHelperText,
-  Input,
   InputLabel,
   MenuItem,
   Select,
@@ -28,16 +27,16 @@ import {
   useDataProvider,
   useNotify,
   useRedirect,
-  useRefresh,
   useRequireAccess,
   useTheme,
   Title,
 } from "react-admin";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  vscDarkPlus,
-  vs,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+
+import Prism from "prismjs";
+import "prismjs/components/prism-log.js";
+import lightTheme from "prismjs/themes/prism.css?inline";
+import darkTheme from "prismjs/themes/prism-dark.css?inline";
+
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -46,6 +45,8 @@ import { createHeader } from "../dataProvider";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SyncIcon from "@mui/icons-material/Sync";
 import ErrorIcon from "@mui/icons-material/Error";
+
+const apiUrl = import.meta.env.VITE_NAC_API_URL;
 
 const LoadingBox = () => (
   <Box display="flex" justifyContent="center" mt={4}>
@@ -60,28 +61,16 @@ interface MemoizedLogLineProps {
 const MemoizedLogLine = memo(function MemoizedLogLine({
   line,
 }: MemoizedLogLineProps) {
-  const [theme] = useTheme();
+  const html = useMemo(
+    () => Prism.highlight(line, Prism.languages.log, "log"),
+    [line],
+  );
+
   return (
-    <SyntaxHighlighter
-      language="log"
-      style={theme == "dark" ? vscDarkPlus : vs}
-      // showLineNumbers
-      wrapLines
-      wrapLongLines
-      lineProps={{
-        style: { wordBreak: "break-all", whiteSpace: "pre-wrap" },
-      }}
-      customStyle={{
-        margin: 0,
-        padding: "0px 0px",
-        border: 0,
-        fontSize: "13px",
-        background: "transparent",
-      }}
-      PreTag="div"
-    >
-      {line}
-    </SyntaxHighlighter>
+    <pre
+      style={{ margin: 0, whiteSpace: "pre-wrap" }}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 });
 
@@ -221,6 +210,7 @@ export const DebugList = () => {
 
   const dataProvider = useDataProvider();
   const notify = useNotify();
+  const [theme] = useTheme();
 
   const [retryCount, setRetryCount] = useState(0);
   const [activeDebugging, setActiveDebugging] = useState(null);
@@ -251,19 +241,16 @@ export const DebugList = () => {
     let reconnectTimeout;
 
     // Setup EventSource SSE debug log listener
-    const eventSource = new EventSource(
-      "http://localhost:8000/api/v2/debug/logs",
-      {
-        fetch: (input, init) =>
-          fetch(input, {
-            ...init,
-            headers: {
-              ...init.headers,
-              Authorization: createHeader().get("Authorization"),
-            },
-          }),
-      },
-    );
+    const eventSource = new EventSource(`${apiUrl}/debug/logs`, {
+      fetch: (input, init) =>
+        fetch(input, {
+          ...init,
+          headers: {
+            ...init.headers,
+            Authorization: createHeader().get("Authorization"),
+          },
+        }),
+    });
     eventSource.addEventListener("message", (event) => {
       const log = JSON.parse(event.data);
       const node_name = log.node_name;
@@ -278,7 +265,7 @@ export const DebugList = () => {
       });
       setDebugLogs((prev) => {
         const prev_copy = { ...prev };
-        if (!Object.keys(prev_copy).includes(node_name)) {
+        if (!(node_name in prev_copy)) {
           prev_copy[node_name] = [];
         }
 
@@ -322,6 +309,11 @@ export const DebugList = () => {
       logObj.log_line.includes(filter),
     );
   }, [debugLogs, filter, selectedNode]);
+
+  // Update Prism highlighting when theme changes
+  useEffect(() => {
+    Prism.highlightAll();
+  }, [theme]);
 
   useEffect(() => {
     if (autoScroll && codeRef.current) {
@@ -434,8 +426,14 @@ export const DebugList = () => {
             style={{
               maxHeight: "100%",
               overflowY: "auto",
+              fontSize: "13px",
             }}
           >
+            <style
+              dangerouslySetInnerHTML={{
+                __html: theme == "dark" ? darkTheme : lightTheme,
+              }}
+            />
             {displayedLogs.map((logObj) => (
               // Use a unique ID for the key if available, otherwise index is acceptable for append-only logs
               <MemoizedLogLine key={logObj.id} line={logObj.log_line} />
