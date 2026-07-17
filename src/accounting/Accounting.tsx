@@ -22,6 +22,7 @@ import {
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
+import { EndpointDebugCreateButton } from "../shared/DebugCreateButton";
 
 const AccountingFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -55,6 +56,7 @@ const AccountingListActions = () => (
 
 const AccountingShowActions = () => (
   <TopToolbar>
+    <EndpointDebugCreateButton />
     <DeleteButton mutationMode="pessimistic" />
   </TopToolbar>
 );

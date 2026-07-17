@@ -42,7 +42,7 @@ import {
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
-
+import { EndpointDebugCreateButton } from "../shared/DebugCreateButton";
 import UploadIcon from "@mui/icons-material/Upload";
 import { BulkUpdateFormButton } from "../shared/BulkUpdateFormButton";
 
@@ -329,6 +329,7 @@ const EndpointShowTitle = () => {
 
 const EndpointShowActions = () => (
   <TopToolbar>
+    <EndpointDebugCreateButton />
     <EditButton />
     <DeleteButton mutationMode="pessimistic" />
   </TopToolbar>

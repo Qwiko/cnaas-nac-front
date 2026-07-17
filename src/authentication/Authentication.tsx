@@ -23,7 +23,7 @@ import {
   NACDefaultPagination,
   NACPagination,
 } from "../shared/Shared";
-import { Typography } from "@mui/material";
+import { EndpointDebugCreateButton } from "../shared/DebugCreateButton";
 
 const AuthenticationFilters = [
   // eslint-disable-next-line react/jsx-key
@@ -72,7 +72,8 @@ const AuthenticationListActions = () => (
 
 const AuthenticationShowActions = () => (
   <TopToolbar>
-    <DeleteButton mutationMode="pessimistic"/>
+    <EndpointDebugCreateButton />
+    <DeleteButton mutationMode="pessimistic" />
   </TopToolbar>
 );
 
